@@ -21,6 +21,16 @@ URL da API:
 
 Health: `GET /health/ready`. Chat: `POST /api/v1/chat` (titular autenticado).
 
+Com a API ready, o cliente HTTP do recorte 1:
+
+```bash
+dart run tool/smoke_api.dart
+```
+
+Seed de login: `patient@checkme.local` / `checkme-patient-2026`. Grave sem IA: `dor no peito e falta de ar`. Leve em development: `qa triagem leve`.
+
+Celular físico: `--dart-define=API_URL=http://IP-DA-MAQUINA:8000`.
+
 ## Recorte 1
 
 Três abas: Cuidar (este recorte), Consultas e Conta (placeholders).

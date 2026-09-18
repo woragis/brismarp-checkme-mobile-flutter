@@ -96,12 +96,10 @@ class CareController extends Notifier<CareSnapshot> {
   }
 
   Future<void> comecarOrientacao() async {
-    final auth = ref.read(authControllerProvider);
     final greeting = _msg(saudacao, fromUser: false);
     state = CareSnapshot(
       phase: const CareDescrevendo(),
       messages: [greeting],
-      sessaoId: auth.user == null ? null : state.sessaoId,
     );
   }
 
@@ -205,13 +203,13 @@ class CareController extends Notifier<CareSnapshot> {
     }
   }
 
-  void novaOrientacao() {
+  Future<void> novaOrientacao() async {
     final auth = ref.read(authControllerProvider);
     final userId = auth.user?.id;
     if (userId != null) {
-      _store.delete(sessaoKey(userId));
+      await _store.delete(sessaoKey(userId));
     }
-    comecarOrientacao();
+    await comecarOrientacao();
   }
 
   void voltarAoHub() {
