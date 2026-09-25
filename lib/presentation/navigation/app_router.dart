@@ -1,8 +1,15 @@
 import 'package:go_router/go_router.dart';
 
-import '../screens/conta/conta_placeholder_screen.dart';
+import '../screens/consultas/consultas_screen.dart';
+import '../screens/conta/conteudo_screen.dart';
+import '../screens/conta/conta_menu_screen.dart';
+import '../screens/conta/dados_screen.dart';
+import '../screens/conta/excluir_screen.dart';
+import '../screens/conta/familia_screen.dart';
+import '../screens/conta/ficha_screen.dart';
+import '../screens/conta/porta_screen.dart';
 import '../screens/cuidar/cuidar_screen.dart';
-import '../screens/em_breve_screen.dart';
+import '../screens/planos/planos_screen.dart';
 import 'app_shell.dart';
 
 GoRouter createRouter() {
@@ -26,11 +33,15 @@ GoRouter createRouter() {
             routes: [
               GoRoute(
                 path: '/consultas',
-                builder: (context, state) => const EmBreveScreen(
-                  titulo: 'Consultas',
-                  texto:
-                      'Profissionais, horários e a sala de video entram no próximo recorte. A orientação continua na aba Cuidar.',
-                ),
+                builder: (context, state) => const ConsultasScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/planos',
+                builder: (context, state) => const PlanosScreen(),
               ),
             ],
           ),
@@ -38,7 +49,44 @@ GoRouter createRouter() {
             routes: [
               GoRoute(
                 path: '/conta',
-                builder: (context, state) => const ContaPlaceholderScreen(),
+                builder: (context, state) => const ContaMenuScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'porta',
+                    builder: (context, state) => const PortaScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ficha',
+                    builder: (context, state) => const FichaScreen(),
+                  ),
+                  GoRoute(
+                    path: 'familia',
+                    builder: (context, state) => const FamiliaScreen(),
+                  ),
+                  GoRoute(
+                    path: 'dados',
+                    builder: (context, state) => const DadosScreen(),
+                  ),
+                  GoRoute(
+                    path: 'excluir',
+                    builder: (context, state) => const ExcluirScreen(),
+                  ),
+                  GoRoute(
+                    path: 'especialidades',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.especialidades),
+                  ),
+                  GoRoute(
+                    path: 'rede',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.rede),
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.faq),
+                  ),
+                ],
               ),
             ],
           ),

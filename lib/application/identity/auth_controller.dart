@@ -90,10 +90,7 @@ class AuthController extends Notifier<AuthSnapshot> {
     }
   }
 
-  Future<void> entrar({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> entrar({required String email, required String password}) async {
     state = state.copyWith(clearError: true);
     final tokens = await _api.login(email: email, password: password);
     await _persist(tokens);
@@ -115,6 +112,44 @@ class AuthController extends Notifier<AuthSnapshot> {
       affiliateCode: affiliateCode,
     );
     await _persist(tokens);
+  }
+
+  Future<void> atualizarNome(String nome) async {
+    final user = state.user;
+    if (user == null || nome.trim().isEmpty) return;
+    final next = User(
+      id: user.id,
+      email: user.email,
+      nome: nome.trim(),
+      role: user.role,
+      emailVerified: user.emailVerified,
+    );
+    await _store.write(_kUser, jsonEncode(next.toJson()));
+    state = state.copyWith(user: next);
+  }
+
+  Future<void> marcarEmailVerificado() async {
+    final user = state.user;
+    if (user == null) return;
+    final next = User(
+      id: user.id,
+      email: user.email,
+      nome: user.nome,
+      role: user.role,
+      emailVerified: true,
+    );
+    await _store.write(_kUser, jsonEncode(next.toJson()));
+    state = state.copyWith(user: next, clearError: true);
+  }
+
+  Future<void> esqueciSenha(String email) => _api.esqueciSenha(email);
+
+  Future<void> redefinirSenha({
+    required String email,
+    required String code,
+    required String password,
+  }) {
+    return _api.redefinirSenha(email: email, code: code, password: password);
   }
 
   Future<void> sair() async {
@@ -171,5 +206,6 @@ final checkmeApiProvider = Provider<CheckmeApi>((ref) {
   return CheckmeApi(ref.watch(apiClientProvider));
 });
 
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthSnapshot>(AuthController.new);
+final authControllerProvider = NotifierProvider<AuthController, AuthSnapshot>(
+  AuthController.new,
+);

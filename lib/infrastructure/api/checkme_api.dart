@@ -1,3 +1,5 @@
+import '../../domain/agenda/models.dart';
+import '../../domain/agenda/quando.dart';
 import '../../domain/care/models.dart';
 import '../../domain/care/visible_text.dart';
 import '../../domain/identity/user.dart';
@@ -79,6 +81,208 @@ class CheckmeApi {
   Future<SessionView> triagem(String id) async {
     final data = await _client.getJson('/me/triagens/$id');
     return _session(data, withHistory: true);
+  }
+
+  Future<void> verifyEmail(String code) async {
+    await _client.postJson('/auth/verify-email', {'code': code});
+  }
+
+  Future<void> resendVerification() async {
+    await _client.postJson('/auth/resend-verification', {});
+  }
+
+  Future<List<Profissional>> profissionais() async {
+    final raw = await _client.getList('/professionals');
+    final agora = DateTime.now();
+    final lista = <Profissional>[];
+    for (final item in raw.whereType<Map>()) {
+      final map = Map<String, dynamic>.from(item);
+      final id = map['id']?.toString() ?? '';
+      if (id.isEmpty) continue;
+      DateTime? proximo;
+      try {
+        final slots = await horarios(id);
+        proximo = proximoFuturo(slots.map((s) => s.startsAt), agora);
+      } catch (_) {
+        proximo = null;
+      }
+      lista.add(
+        Profissional(
+          id: id,
+          nome: map['nome']?.toString() ?? '',
+          especialidade: map['specialties']?.toString() ?? '',
+          proximo: proximo,
+        ),
+      );
+    }
+    return lista;
+  }
+
+  Future<List<Horario>> horarios(String profissionalId) async {
+    final raw = await _client.getList('/professionals/$profissionalId/slots');
+    return raw.whereType<Map>().map((item) {
+      final map = Map<String, dynamic>.from(item);
+      return Horario(
+        id: map['id']?.toString() ?? '',
+        startsAt:
+            DateTime.tryParse(map['startsAt']?.toString() ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0),
+        endsAt:
+            DateTime.tryParse(map['endsAt']?.toString() ?? '') ??
+            DateTime.fromMillisecondsSinceEpoch(0),
+      );
+    }).toList();
+  }
+
+  Future<Consulta> reservar({
+    required String profissionalId,
+    required DateTime startsAt,
+    required DateTime endsAt,
+    String? sessaoId,
+  }) async {
+    final data = await _client.postJson('/appointments', {
+      'professionalId': profissionalId,
+      'startsAt': startsAt.toUtc().toIso8601String(),
+      'endsAt': endsAt.toUtc().toIso8601String(),
+      if (sessaoId != null && sessaoId.isNotEmpty) 'sessaoId': sessaoId,
+    });
+    return _consulta(data);
+  }
+
+  Future<List<Consulta>> consultas() async {
+    final raw = await _client.getList('/appointments');
+    return raw
+        .whereType<Map>()
+        .map((item) => _consulta(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Consulta _consulta(Map<String, dynamic> data) {
+    return Consulta(
+      id: data['id']?.toString() ?? '',
+      profissionalId: data['professionalId']?.toString() ?? '',
+      startsAt:
+          DateTime.tryParse(data['startsAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+      status: data['status']?.toString() ?? '',
+      videoStatus: data['videoStatus']?.toString() ?? '',
+    );
+  }
+
+  Future<void> reagendarConsulta(
+    String id, {
+    required DateTime startsAt,
+    required DateTime endsAt,
+  }) async {
+    await _client.postJson('/appointments/$id/reschedule', {
+      'startsAt': startsAt.toUtc().toIso8601String(),
+      'endsAt': endsAt.toUtc().toIso8601String(),
+    });
+  }
+
+  Future<void> cancelarConsulta(String id) async {
+    await _client.postJson('/appointments/$id/cancel', {});
+  }
+
+  Future<String> entrarVideo(String id) async {
+    final data = await _client.postJson('/appointments/$id/video/join', {});
+    return data['url']?.toString() ?? '';
+  }
+
+  Future<void> encerrarVideo(String id) async {
+    await _client.postJson('/appointments/$id/video/end', {});
+  }
+
+  Future<Map<String, dynamic>> eu() => _client.getJson('/me');
+
+  Future<Map<String, dynamic>> atualizarEu({
+    required String nome,
+    required String cpf,
+    required String phone,
+  }) {
+    return _client.patchJson('/me', {'nome': nome, 'cpf': cpf, 'phone': phone});
+  }
+
+  Future<Map<String, dynamic>> exportarEu() => _client.getJson('/me/export');
+
+  Future<void> apagarEu() async {
+    await _client.postJson('/me/erase', {});
+  }
+
+  Future<Map<String, dynamic>> adicionarDependente({
+    required String nome,
+    required String kinship,
+  }) {
+    return _client.postJson('/me/dependents', {
+      'nome': nome,
+      'kinship': kinship,
+    });
+  }
+
+  Future<void> removerDependente(String id) async {
+    await _client.delete('/me/dependents/$id');
+  }
+
+  Future<List<Map<String, dynamic>>> planos() async {
+    final raw = await _client.getList('/planos');
+    return raw
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> validarCupom(String code) {
+    return _client.postJson('/coupons/validate', {'code': code});
+  }
+
+  Future<Map<String, dynamic>> contratarPlano({
+    required String planId,
+    String couponCode = '',
+  }) {
+    return _client.postJson('/subscriptions', {
+      'planId': planId,
+      if (couponCode.isNotEmpty) 'couponCode': couponCode,
+    });
+  }
+
+  Future<void> esqueciSenha(String email) async {
+    await _client.postJson('/auth/forgot-password', {'email': email});
+  }
+
+  Future<void> redefinirSenha({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    await _client.postJson('/auth/reset-password', {
+      'email': email,
+      'code': code,
+      'password': password,
+    });
+  }
+
+  Future<List<String>> especialidades() async {
+    final raw = await _client.getList('/especialidades');
+    return raw
+        .map((item) => item.toString())
+        .where((n) => n.isNotEmpty)
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> rede() async {
+    final raw = await _client.getList('/rede-credenciada/descontos');
+    return raw
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> faq() async {
+    final raw = await _client.getList('/faq');
+    return raw
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
   }
 
   Future<ContactInfo> contato() async {

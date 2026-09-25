@@ -22,15 +22,16 @@ class ApiClient {
     this._refreshToken,
     this._onRefresh,
     this._onSessionLost,
-  })  : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: config.v1,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 30),
-                headers: {'Content-Type': 'application/json'},
-              ),
-            ) {
+  }) : _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               baseUrl: config.v1,
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 30),
+               headers: {'Content-Type': 'application/json'},
+             ),
+           ) {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -125,6 +126,29 @@ class ApiClient {
       final data = res.data;
       if (data is List) return data;
       return const [];
+    } on DioException catch (e) {
+      throw _toApi(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> patchJson(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final res = await _dio.patch<dynamic>(path, data: body);
+      if (res.statusCode == 204 || res.data == null || res.data == '') {
+        return const {};
+      }
+      return _asMap(res.data);
+    } on DioException catch (e) {
+      throw _toApi(e);
+    }
+  }
+
+  Future<void> delete(String path) async {
+    try {
+      await _dio.delete<dynamic>(path);
     } on DioException catch (e) {
       throw _toApi(e);
     }

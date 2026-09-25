@@ -50,13 +50,14 @@ ThemeData checkmeTheme() {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: CheckmeColors.cartao,
       indicatorColor: CheckmeColors.azulNeve,
-      labelTextStyle: WidgetStatePropertyAll(
-        GoogleFonts.poppins(
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return GoogleFonts.poppins(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: CheckmeColors.textoSecundario,
-        ),
-      ),
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          color: selected ? CheckmeColors.navy : CheckmeColors.textoSecundario,
+        );
+      }),
     ),
   );
 }

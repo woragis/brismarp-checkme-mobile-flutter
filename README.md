@@ -33,12 +33,12 @@ Celular físico: `--dart-define=API_URL=http://IP-DA-MAQUINA:8000`.
 
 ## Recorte 1
 
-Três abas: Cuidar (este recorte), Consultas e Conta (placeholders).
+Quatro abas: Cuidar, Consultas, Planos e Conta (menu de uma linha por função).
 
 - Visitante vê o hub e começa a orientação sem conta.
 - Login no momento do valor (sheet), com checkbox LGPD.
 - `ALERTA_GRAVE` → tela de urgência (SAMU 192 / WhatsApp). Sem agendar. Sem SOAP.
-- `LEVE` / `MODERADO` → beat do check. Sem auto-navegar para agenda.
+- `LEVE` / `MODERADO` → beat do check, com o relato e o próximo passo. A pessoa toca em Ver profissionais. Sem auto-navegar para a agenda.
 - Emergência nunca bloqueada por login.
 
 ## Pasta

@@ -29,6 +29,32 @@ class CareProximoPasso extends CarePhase {
   final TriageStatus status;
 }
 
+class CareEscolhendoProfissional extends CarePhase {
+  const CareEscolhendoProfissional({
+    required this.mensagem,
+    required this.status,
+  });
+
+  final String mensagem;
+  final TriageStatus status;
+}
+
+class CareEscolhendoHorario extends CarePhase {
+  const CareEscolhendoHorario({
+    required this.mensagem,
+    required this.status,
+    required this.profissionalId,
+    required this.nome,
+    required this.especialidade,
+  });
+
+  final String mensagem;
+  final TriageStatus status;
+  final String profissionalId;
+  final String nome;
+  final String especialidade;
+}
+
 class CareGrave extends CarePhase {
   const CareGrave({this.whatsapp});
 

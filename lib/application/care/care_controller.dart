@@ -97,10 +97,7 @@ class CareController extends Notifier<CareSnapshot> {
 
   Future<void> comecarOrientacao() async {
     final greeting = _msg(saudacao, fromUser: false);
-    state = CareSnapshot(
-      phase: const CareDescrevendo(),
-      messages: [greeting],
-    );
+    state = CareSnapshot(phase: const CareDescrevendo(), messages: [greeting]);
   }
 
   void abrirSheet() {
@@ -212,6 +209,61 @@ class CareController extends Notifier<CareSnapshot> {
     await comecarOrientacao();
   }
 
+  void verProfissionais() {
+    final phase = state.phase;
+    if (phase is! CareProximoPasso) return;
+    state = state.copyWith(
+      phase: CareEscolhendoProfissional(
+        mensagem: phase.mensagem,
+        status: phase.status,
+      ),
+    );
+  }
+
+  void escolherHorario({
+    required String profissionalId,
+    required String nome,
+    required String especialidade,
+  }) {
+    final phase = state.phase;
+    if (phase is! CareEscolhendoProfissional) return;
+    state = state.copyWith(
+      phase: CareEscolhendoHorario(
+        mensagem: phase.mensagem,
+        status: phase.status,
+        profissionalId: profissionalId,
+        nome: nome,
+        especialidade: especialidade,
+      ),
+    );
+  }
+
+  void voltarAosProfissionais() {
+    final phase = state.phase;
+    if (phase is! CareEscolhendoHorario) return;
+    state = state.copyWith(
+      phase: CareEscolhendoProfissional(
+        mensagem: phase.mensagem,
+        status: phase.status,
+      ),
+    );
+  }
+
+  void voltarAoPasso() {
+    final phase = state.phase;
+    if (phase is CareEscolhendoProfissional) {
+      state = state.copyWith(
+        phase: CareProximoPasso(mensagem: phase.mensagem, status: phase.status),
+      );
+      return;
+    }
+    if (phase is CareEscolhendoHorario) {
+      state = state.copyWith(
+        phase: CareProximoPasso(mensagem: phase.mensagem, status: phase.status),
+      );
+    }
+  }
+
   void voltarAoHub() {
     final auth = ref.read(authControllerProvider);
     if (auth.user == null) {
@@ -254,9 +306,7 @@ class CareController extends Notifier<CareSnapshot> {
           : visibleOrientationText(view.soap);
       state = CareSnapshot(
         phase: CareProximoPasso(
-          mensagem: mensagem.isNotEmpty
-              ? mensagem
-              : 'A orientação inicial fechou. O próximo passo é falar com um profissional da rede.',
+          mensagem: mensagem.isNotEmpty ? mensagem : 'A orientação inicial fechou. O próximo passo é falar com um profissional da rede.',
           status: view.status,
         ),
         messages: view.history,
@@ -302,8 +352,9 @@ class CareController extends Notifier<CareSnapshot> {
   }
 }
 
-final careControllerProvider =
-    NotifierProvider<CareController, CareSnapshot>(CareController.new);
+final careControllerProvider = NotifierProvider<CareController, CareSnapshot>(
+  CareController.new,
+);
 
 final apiReadyProvider = FutureProvider<bool>((ref) async {
   return ref.watch(checkmeApiProvider).ready();

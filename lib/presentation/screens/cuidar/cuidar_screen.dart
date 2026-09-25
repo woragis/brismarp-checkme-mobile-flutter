@@ -3,13 +3,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/care/care_controller.dart';
+import '../../../domain/care/models.dart';
 import '../../../domain/care/phase.dart';
 import '../../theme/colors.dart';
 import '../../theme/motion.dart';
 import 'conta_sheet.dart';
 import 'cuidar_hub.dart';
 import 'grave_screen.dart';
+import 'horarios_screen.dart';
 import 'orientacao_chat.dart';
+import 'profissionais_screen.dart';
 import 'proximo_passo_screen.dart';
 
 class CuidarScreen extends ConsumerWidget {
@@ -21,8 +24,13 @@ class CuidarScreen extends ConsumerWidget {
     final child = switch (care.phase) {
       CareVisitante() || CareEmPaz() => const CuidarHub(),
       CareDescrevendo() || CarePedindoConta() => const OrientacaoChat(),
-      CareProximoPasso(:final mensagem) =>
-        ProximoPassoScreen(mensagem: mensagem),
+      CareProximoPasso(:final mensagem, :final status) => ProximoPassoScreen(
+        mensagem: mensagem,
+        status: status,
+        relato: _relato(care.messages),
+      ),
+      CareEscolhendoProfissional() => const ProfissionaisScreen(),
+      final CareEscolhendoHorario fase => HorariosScreen(fase: fase),
       CareGrave(:final whatsapp) => GraveScreen(whatsapp: whatsapp),
     };
 
@@ -44,11 +52,18 @@ class CuidarScreen extends ConsumerWidget {
           if (care.hydrating)
             const ModalBarrier(dismissible: false, color: Color(0x22FFFFFF)),
           if (care.sheetOpen || care.phase is CarePedindoConta)
-            const ContaSheet()
-                .animate()
-                .fadeIn(duration: CheckmeMotion.sheet),
+            const ContaSheet().animate().fadeIn(duration: CheckmeMotion.sheet),
         ],
       ),
     );
   }
+}
+
+String _relato(List<CareMessage> messages) {
+  for (var i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].fromUser && messages[i].text.trim().isNotEmpty) {
+      return messages[i].text.trim();
+    }
+  }
+  return '';
 }

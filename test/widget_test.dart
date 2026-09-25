@@ -8,6 +8,7 @@ import 'package:checkme/infrastructure/api/api_client.dart';
 import 'package:checkme/infrastructure/api/api_config.dart';
 import 'package:checkme/infrastructure/storage/session_store.dart';
 import 'package:checkme/presentation/navigation/app_router.dart';
+import 'package:checkme/presentation/screens/consultas/consultas_screen.dart';
 import 'package:checkme/presentation/theme/theme.dart';
 
 void main() {
@@ -15,10 +16,13 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  testWidgets('hub visitor shows care CTA and placeholders stay honest',
-      (tester) async {
+  testWidgets('hub visitor shows care CTA and placeholders stay honest', (
+    tester,
+  ) async {
     final store = MemorySessionStore();
-    final client = ApiClient(config: const ApiConfig(root: 'http://127.0.0.1:9'));
+    final client = ApiClient(
+      config: const ApiConfig(root: 'http://127.0.0.1:9'),
+    );
     final router = createRouter();
 
     await tester.pumpWidget(
@@ -27,10 +31,7 @@ void main() {
           sessionStoreProvider.overrideWithValue(store),
           apiClientProvider.overrideWithValue(client),
         ],
-        child: MaterialApp.router(
-          theme: checkmeTheme(),
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(theme: checkmeTheme(), routerConfig: router),
       ),
     );
     await tester.pump();
@@ -44,7 +45,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text('Orientação inicial'), findsOneWidget);
-    expect(find.textContaining('Pode me contar o que você está sentindo'), findsOneWidget);
+    expect(
+      find.textContaining('Pode me contar o que você está sentindo'),
+      findsOneWidget,
+    );
 
     await tester.enterText(find.byType(TextField), 'dor de cabeça');
     await tester.tap(find.byIcon(Icons.send_rounded));
@@ -56,6 +60,7 @@ void main() {
     await tester.tap(find.text('Consultas'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Em breve'), findsWidgets);
+    expect(find.text(consultasVisitante), findsOneWidget);
+    expect(find.text('Ir para Cuidar'), findsOneWidget);
   });
 }
