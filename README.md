@@ -80,3 +80,14 @@ A janela de reutilização no servidor é de dez minutos.
 Para validar a API real, suba o backend com PostgreSQL e Redis e execute
 `dart run tool/smoke_api.dart`. Esse smoke cria uma conta de teste; os testes Dio
 não acessam serviços externos.
+
+## Build web e publicar na Vercel
+
+A pasta `web/` contém o shell Flutter, favicon CheckMe e rewrite para rotas do
+GoRouter na Vercel. Gere o site com a URL raiz pública da API (o app acrescenta
+`/api/v1`):
+
+```bash
+flutter build web --release --dart-define=API_URL=https://api.example.com
+cd build/web && vercel --prod
+```
