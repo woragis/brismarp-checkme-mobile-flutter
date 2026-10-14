@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../domain/agenda/models.dart';
 import '../../domain/agenda/quando.dart';
 import '../../domain/care/models.dart';
@@ -48,8 +50,8 @@ class CheckmeApi {
       'refreshToken': refreshToken,
     });
     return AuthRefresh(
-      accessToken: data['accessToken']?.toString() ?? '',
-      refreshToken: data['refreshToken']?.toString() ?? refreshToken,
+      accessToken: _requiredString(data, 'accessToken'),
+      refreshToken: _requiredString(data, 'refreshToken'),
     );
   }
 
@@ -63,19 +65,16 @@ class CheckmeApi {
       if (sessaoId != null && sessaoId.isNotEmpty) 'sessaoId': sessaoId,
     });
     return ChatReply(
-      status: TriageStatus.parse(data['status']?.toString()),
-      mensagem: visibleOrientationText(data['mensagem']?.toString()),
-      sessaoId: data['sessaoId']?.toString() ?? '',
+      status: _triageStatus(data),
+      mensagem: visibleOrientationText(_requiredString(data, 'mensagem')),
+      sessaoId: _requiredString(data, 'sessaoId'),
       soap: data['soap']?.toString(),
     );
   }
 
   Future<List<SessionView>> listTriagens() async {
     final raw = await _client.getList('/me/triagens');
-    return raw
-        .whereType<Map>()
-        .map((m) => _session(Map<String, dynamic>.from(m), withHistory: false))
-        .toList();
+    return raw.map((m) => _session(_map(m), withHistory: false)).toList();
   }
 
   Future<SessionView> triagem(String id) async {
@@ -95,23 +94,22 @@ class CheckmeApi {
     final raw = await _client.getList('/professionals');
     final agora = DateTime.now();
     final lista = <Profissional>[];
-    for (final item in raw.whereType<Map>()) {
-      final map = Map<String, dynamic>.from(item);
-      final id = map['id']?.toString() ?? '';
-      if (id.isEmpty) continue;
-      DateTime? proximo;
-      try {
-        final slots = await horarios(id);
-        proximo = proximoFuturo(slots.map((s) => s.startsAt), agora);
-      } catch (_) {
-        proximo = null;
-      }
-      lista.add(
-        Profissional(
-          id: id,
-          nome: map['nome']?.toString() ?? '',
-          especialidade: map['specialties']?.toString() ?? '',
-          proximo: proximo,
+    // Limit concurrent requests so a large network does not flood the API.
+    final maps = raw.map(_map).toList();
+    for (var offset = 0; offset < maps.length; offset += 4) {
+      final batch = maps.skip(offset).take(4);
+      lista.addAll(
+        await Future.wait(
+          batch.map((map) async {
+            final id = _requiredString(map, 'id');
+            final slots = await horarios(id);
+            return Profissional(
+              id: id,
+              nome: _requiredString(map, 'nome'),
+              especialidade: _specialties(map['specialties']),
+              proximo: proximoFuturo(slots.map((s) => s.startsAt), agora),
+            );
+          }),
         ),
       );
     }
@@ -120,16 +118,12 @@ class CheckmeApi {
 
   Future<List<Horario>> horarios(String profissionalId) async {
     final raw = await _client.getList('/professionals/$profissionalId/slots');
-    return raw.whereType<Map>().map((item) {
-      final map = Map<String, dynamic>.from(item);
+    return raw.map((item) {
+      final map = _map(item);
       return Horario(
-        id: map['id']?.toString() ?? '',
-        startsAt:
-            DateTime.tryParse(map['startsAt']?.toString() ?? '') ??
-            DateTime.fromMillisecondsSinceEpoch(0),
-        endsAt:
-            DateTime.tryParse(map['endsAt']?.toString() ?? '') ??
-            DateTime.fromMillisecondsSinceEpoch(0),
+        id: _requiredString(map, 'id'),
+        startsAt: _date(map, 'startsAt'),
+        endsAt: _date(map, 'endsAt'),
       );
     }).toList();
   }
@@ -139,32 +133,28 @@ class CheckmeApi {
     required DateTime startsAt,
     required DateTime endsAt,
     String? sessaoId,
+    required String idempotencyKey,
   }) async {
     final data = await _client.postJson('/appointments', {
       'professionalId': profissionalId,
       'startsAt': startsAt.toUtc().toIso8601String(),
       'endsAt': endsAt.toUtc().toIso8601String(),
       if (sessaoId != null && sessaoId.isNotEmpty) 'sessaoId': sessaoId,
-    });
+    }, idempotencyKey: idempotencyKey);
     return _consulta(data);
   }
 
   Future<List<Consulta>> consultas() async {
     final raw = await _client.getList('/appointments');
-    return raw
-        .whereType<Map>()
-        .map((item) => _consulta(Map<String, dynamic>.from(item)))
-        .toList();
+    return raw.map((item) => _consulta(_map(item))).toList();
   }
 
   Consulta _consulta(Map<String, dynamic> data) {
     return Consulta(
-      id: data['id']?.toString() ?? '',
-      profissionalId: data['professionalId']?.toString() ?? '',
-      startsAt:
-          DateTime.tryParse(data['startsAt']?.toString() ?? '') ??
-          DateTime.fromMillisecondsSinceEpoch(0),
-      status: data['status']?.toString() ?? '',
+      id: _requiredString(data, 'id'),
+      profissionalId: _requiredString(data, 'professionalId'),
+      startsAt: _date(data, 'startsAt'),
+      status: _requiredString(data, 'status'),
       videoStatus: data['videoStatus']?.toString() ?? '',
     );
   }
@@ -186,7 +176,12 @@ class CheckmeApi {
 
   Future<String> entrarVideo(String id) async {
     final data = await _client.postJson('/appointments/$id/video/join', {});
-    return data['url']?.toString() ?? '';
+    final url = _requiredString(data, 'url');
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
+      throw ApiClient.invalidResponse();
+    }
+    return url;
   }
 
   Future<void> encerrarVideo(String id) async {
@@ -224,11 +219,8 @@ class CheckmeApi {
   }
 
   Future<List<Map<String, dynamic>>> planos() async {
-    final raw = await _client.getList('/planos');
-    return raw
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList();
+    final raw = await _client.getList('/planos', auth: false);
+    return raw.map(_map).toList();
   }
 
   Future<Map<String, dynamic>> validarCupom(String code) {
@@ -262,44 +254,87 @@ class CheckmeApi {
   }
 
   Future<List<String>> especialidades() async {
-    final raw = await _client.getList('/especialidades');
+    final raw = await _client.getList('/especialidades', auth: false);
     return raw
-        .map((item) => item.toString())
+        .map((item) {
+          if (item is! String) throw ApiClient.invalidResponse();
+          return item;
+        })
         .where((n) => n.isNotEmpty)
         .toList();
   }
 
   Future<List<Map<String, dynamic>>> rede() async {
-    final raw = await _client.getList('/rede-credenciada/descontos');
-    return raw
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList();
+    final raw = await _client.getList(
+      '/rede-credenciada/descontos',
+      auth: false,
+    );
+    return raw.map(_map).toList();
   }
 
   Future<List<Map<String, dynamic>>> faq() async {
-    final raw = await _client.getList('/faq');
-    return raw
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList();
+    final raw = await _client.getList('/faq', auth: false);
+    return raw.map(_map).toList();
   }
 
   Future<ContactInfo> contato() async {
-    final data = await _client.getJson('/contato');
+    final data = await _client.getJson('/contato', auth: false);
     return ContactInfo(whatsapp: data['whatsapp']?.toString());
   }
 
   AuthTokens _tokens(Map<String, dynamic> data) {
-    final userRaw = data['user'];
-    final userMap = userRaw is Map
-        ? Map<String, dynamic>.from(userRaw)
-        : <String, dynamic>{};
+    final userMap = _map(data['user']);
+    _requiredString(userMap, 'id');
+    _requiredString(userMap, 'email');
     return AuthTokens(
-      accessToken: data['accessToken']?.toString() ?? '',
-      refreshToken: data['refreshToken']?.toString() ?? '',
+      accessToken: _requiredString(data, 'accessToken'),
+      refreshToken: _requiredString(data, 'refreshToken'),
       user: User.fromJson(userMap),
     );
+  }
+
+  Map<String, dynamic> _map(dynamic value) {
+    if (value is! Map<String, dynamic>) throw ApiClient.invalidResponse();
+    return value;
+  }
+
+  String _requiredString(Map<String, dynamic> data, String field) {
+    final value = data[field];
+    if (value is! String || value.trim().isEmpty) {
+      throw ApiClient.invalidResponse();
+    }
+    return value;
+  }
+
+  DateTime _date(Map<String, dynamic> data, String field) {
+    final value = DateTime.tryParse(_requiredString(data, field));
+    if (value == null) throw ApiClient.invalidResponse();
+    return value;
+  }
+
+  TriageStatus _triageStatus(Map<String, dynamic> data) {
+    final value = _requiredString(data, 'status');
+    if (![
+      'ALERTA_GRAVE',
+      'LEVE',
+      'MODERADO',
+      'CONTINUAR_TRIAGEM',
+    ].contains(value)) {
+      throw ApiClient.invalidResponse();
+    }
+    return TriageStatus.parse(value);
+  }
+
+  String _specialties(dynamic value) {
+    if (value == null) return '';
+    if (value is! String) throw ApiClient.invalidResponse();
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is List) return decoded.join(', ');
+    } on FormatException {
+      // The API also accepts plain specialty names.
+    }
+    return value;
   }
 
   SessionView _session(Map<String, dynamic> data, {required bool withHistory}) {
@@ -328,8 +363,8 @@ class CheckmeApi {
       }
     }
     return SessionView(
-      id: data['id']?.toString() ?? '',
-      status: TriageStatus.parse(data['status']?.toString()),
+      id: _requiredString(data, 'id'),
+      status: _triageStatus(data),
       history: history,
       soap: data['soap']?.toString(),
       updatedAt: DateTime.tryParse(data['updatedAt']?.toString() ?? ''),

@@ -35,37 +35,74 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          final token = _accessToken?.call();
+          final skipAuth =
+              options.extra['skipAuth'] == true || _isAuthPath(options.path);
+          final token = skipAuth ? null : _accessToken?.call();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
+          }
+          if (token == null || token.isEmpty) {
+            options.headers.remove('Authorization');
           }
           handler.next(options);
         },
         onError: (error, handler) async {
           final status = error.response?.statusCode;
           final req = error.requestOptions;
-          final already = req.extra['retried'] == true;
           if (status != 401 ||
-              already ||
-              _isAuthPath(req.path) ||
-              _refreshToken?.call() == null) {
+              req.extra['skipAuth'] == true ||
+              _isAuthPath(req.path)) {
+            handler.next(error);
+            return;
+          }
+          final sent = req.headers['Authorization'];
+          final current = _accessToken?.call();
+          if (req.extra['retried'] == true) {
+            if (sent == 'Bearer $current') _onSessionLost?.call();
+            handler.next(error);
+            return;
+          }
+          if (current != null &&
+              current.isNotEmpty &&
+              sent != 'Bearer $current' &&
+              (sent != 'Bearer $_lastExpiredAccess' ||
+                  current != _lastRefreshedAccess)) {
+            // Never replay an old request under an unrelated login.
             handler.next(error);
             return;
           }
           try {
-            final refreshed = await _onRefresh?.call();
-            if (refreshed == null) {
-              _onSessionLost?.call();
-              handler.next(error);
-              return;
+            // A delayed 401 may belong to the token already replaced by another request.
+            if (current == null ||
+                current.isEmpty ||
+                sent == 'Bearer $current') {
+              if (_refreshToken?.call() == null || _onRefresh == null) {
+                if (current != null) _onSessionLost?.call();
+                handler.next(error);
+                return;
+              }
+              final refreshed = await _refreshOnce();
+              if (refreshed == null) {
+                handler.next(error);
+                return;
+              }
             }
-            req.extra['retried'] = true;
-            req.headers['Authorization'] = 'Bearer ${refreshed.accessToken}';
-            final clone = await _dio.fetch(req);
-            handler.resolve(clone);
-          } catch (_) {
-            _onSessionLost?.call();
+          } on ApiException catch (e) {
+            handler.reject(DioException(requestOptions: req, error: e));
+            return;
+          } catch (e) {
+            handler.reject(DioException(requestOptions: req, error: e));
+            return;
+          }
+          if (_accessToken?.call() == null) {
             handler.next(error);
+            return;
+          }
+          req.extra['retried'] = true;
+          try {
+            handler.resolve(await _dio.fetch(req));
+          } on DioException catch (e) {
+            handler.next(e);
           }
         },
       ),
@@ -78,6 +115,37 @@ class ApiClient {
   TokenReader? _refreshToken;
   RefreshFn? _onRefresh;
   SessionLost? _onSessionLost;
+  Future<AuthRefresh?>? _refreshing;
+  String? _lastExpiredAccess;
+  String? _lastRefreshedAccess;
+
+  Future<AuthRefresh?> _refreshOnce() {
+    return _refreshing ??= _runRefresh();
+  }
+
+  Future<AuthRefresh?> _runRefresh() async {
+    final token = _refreshToken?.call();
+    final expiredAccess = _accessToken?.call();
+    try {
+      final result = await Future<AuthRefresh?>.sync(_onRefresh!);
+      if (result == null && token == _refreshToken?.call()) {
+        _onSessionLost?.call();
+      }
+      if (result != null && _accessToken?.call() == result.accessToken) {
+        _lastExpiredAccess = expiredAccess;
+        _lastRefreshedAccess = result.accessToken;
+      }
+      return result;
+    } on ApiException catch (e) {
+      // Connectivity and server errors do not invalidate a valid local session.
+      if (e.unauthorized && token == _refreshToken?.call()) {
+        _onSessionLost?.call();
+      }
+      rethrow;
+    } finally {
+      _refreshing = null;
+    }
+  }
 
   void bindAuth({
     TokenReader? accessToken,
@@ -96,12 +164,16 @@ class ApiClient {
         path.contains('/auth/register') ||
         path.contains('/auth/refresh') ||
         path.contains('/auth/forgot-password') ||
-        path.contains('/auth/reset-password');
+        path.contains('/auth/reset-password') ||
+        path.contains('/auth/logout');
   }
 
   Future<bool> ready() async {
     try {
-      final res = await _dio.getUri(Uri.parse('${config.root}/health/ready'));
+      final res = await _dio.getUri(
+        Uri.parse('${config.root}/health/ready'),
+        options: Options(extra: {'skipAuth': true}),
+      );
       return res.statusCode == 200;
     } catch (_) {
       return false;
@@ -120,12 +192,17 @@ class ApiClient {
     }
   }
 
-  Future<List<dynamic>> getList(String path) async {
+  Future<List<dynamic>> getList(String path, {bool auth = true}) async {
     try {
-      final res = await _dio.get<dynamic>(path);
+      final res = await _dio.get<dynamic>(
+        path,
+        options: Options(extra: {'skipAuth': !auth}),
+      );
       final data = res.data;
       if (data is List) return data;
-      return const [];
+      // Go encodes nil collection slices as JSON null.
+      if (data == null) return const [];
+      throw invalidResponse();
     } on DioException catch (e) {
       throw _toApi(e);
     }
@@ -156,10 +233,15 @@ class ApiClient {
 
   Future<Map<String, dynamic>> postJson(
     String path,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    String? idempotencyKey,
+  }) async {
     try {
-      final res = await _dio.post<dynamic>(path, data: body);
+      final res = await _dio.post<dynamic>(
+        path,
+        data: body,
+        options: Options(headers: {'X-Idempotency-Key': ?idempotencyKey}),
+      );
       if (res.statusCode == 204 || res.data == null || res.data == '') {
         return const {};
       }
@@ -172,10 +254,16 @@ class ApiClient {
   Map<String, dynamic> _asMap(dynamic data) {
     if (data is Map<String, dynamic>) return data;
     if (data is Map) return Map<String, dynamic>.from(data);
-    return const {};
+    throw invalidResponse();
   }
 
+  static ApiException invalidResponse() => const ApiException(
+    code: 'client.invalid_response',
+    message: 'Recebemos uma resposta inesperada. Tente novamente.',
+  );
+
   ApiException _toApi(DioException e) {
+    if (e.error is ApiException) return e.error as ApiException;
     final status = e.response?.statusCode;
     final data = e.response?.data;
     if (data is Map) {

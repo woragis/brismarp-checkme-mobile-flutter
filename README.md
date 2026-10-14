@@ -64,3 +64,18 @@ A paleta está centralizada em `lib/presentation/theme/colors.dart`: roxo para
 ações principais, ciano para destaques e lavanda para superfícies. O ciano de
 texto é mais escuro para leitura em branco; as cores de alerta e sucesso mantêm
 seu significado.
+
+## Verificação da integração mobile
+
+`flutter test` inclui testes do cliente Dio com um servidor simulado: renovação
+concorrente, falhas temporárias, logout durante renovação, contratos inválidos,
+carregamento paralelo de horários e reutilização da chave de agendamento.
+Coleções `null` são aceitas como vazias para compatibilidade com slices Go.
+
+O agendamento envia `X-Idempotency-Key` e reutiliza a chave em tentativas da mesma
+operação. A garantia no servidor ainda depende de corrigir o armazenamento Redis:
+o backend atual usa `SetNX` também para finalizar uma entrada `pending`.
+
+Para validar a API real, suba o backend com PostgreSQL e Redis e execute
+`dart run tool/smoke_api.dart`. Esse smoke cria uma conta de teste; os testes Dio
+não acessam serviços externos.

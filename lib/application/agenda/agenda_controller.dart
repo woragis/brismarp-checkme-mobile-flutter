@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/agenda/models.dart';
@@ -75,6 +77,9 @@ class AgendaController extends Notifier<AgendaSnapshot> {
   Horario? _pendente;
   String? _pendentePro;
   String? _pendenteSessao;
+  String? _reservaPayload;
+  String? _reservaKey;
+  DateTime? _reservaCriadaEm;
 
   @override
   AgendaSnapshot build() {
@@ -145,6 +150,23 @@ class AgendaController extends Notifier<AgendaSnapshot> {
     required Horario horario,
     String? sessaoId,
   }) async {
+    if (state.reservando) return false;
+    final userId = ref.read(authControllerProvider).user?.id;
+    final payload =
+        '$userId|$profissionalId|${horario.startsAt.toUtc()}|'
+        '${horario.endsAt.toUtc()}|$sessaoId';
+    if (_reservaPayload != payload ||
+        _reservaKey == null ||
+        DateTime.now().difference(_reservaCriadaEm!) >=
+            const Duration(minutes: 9)) {
+      _reservaPayload = payload;
+      _reservaCriadaEm = DateTime.now();
+      final random = Random.secure();
+      _reservaKey = List.generate(
+        24,
+        (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+      ).join();
+    }
     _pendente = horario;
     _pendentePro = profissionalId;
     _pendenteSessao = sessaoId;
@@ -155,10 +177,14 @@ class AgendaController extends Notifier<AgendaSnapshot> {
         startsAt: horario.startsAt,
         endsAt: horario.endsAt,
         sessaoId: sessaoId,
+        idempotencyKey: _reservaKey!,
       );
       _pendente = null;
-      state = state.copyWith(reservando: false, pedindoCodigo: false);
+      _reservaKey = null;
+      _reservaPayload = null;
+      state = state.copyWith(pedindoCodigo: false);
       await carregarConsultas();
+      state = state.copyWith(reservando: false);
       return true;
     } on ApiException catch (e) {
       final pedeCodigo = e.code == 'identity.unverified';

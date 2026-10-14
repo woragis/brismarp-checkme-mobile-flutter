@@ -50,6 +50,13 @@ class AuthController extends Notifier<AuthSnapshot> {
   late final ApiClient _client;
   String? _access;
   String? _refresh;
+  Future<void> _storageWork = Future.value();
+
+  Future<void> _serializeStorage(Future<void> Function() work) {
+    final next = _storageWork.then((_) => work());
+    _storageWork = next.then((_) {}, onError: (Object _) {});
+    return next;
+  }
 
   String? get accessToken => _access;
   String? get refreshToken => _refresh;
@@ -80,13 +87,13 @@ class AuthController extends Notifier<AuthSnapshot> {
       if (raw != null && raw.isNotEmpty) {
         user = User.fromJson(jsonDecode(raw) as Map<String, dynamic>);
       }
-      if (_access == null || user == null) {
-        state = const AuthSnapshot(hydrating: false);
+      if (_access == null || _access!.isEmpty || user == null) {
+        await clearLocal();
         return;
       }
       state = AuthSnapshot(user: user, hydrating: false);
     } catch (_) {
-      state = const AuthSnapshot(hydrating: false);
+      await clearLocal();
     }
   }
 
@@ -167,30 +174,41 @@ class AuthController extends Notifier<AuthSnapshot> {
   Future<void> clearLocal() async {
     _access = null;
     _refresh = null;
-    await _store.delete(_kAccess);
-    await _store.delete(_kRefresh);
-    await _store.delete(_kUser);
     state = const AuthSnapshot(hydrating: false);
+    await _serializeStorage(() async {
+      await _store.delete(_kAccess);
+      await _store.delete(_kRefresh);
+      await _store.delete(_kUser);
+    });
   }
 
   Future<void> _persist(AuthTokens tokens) async {
     _access = tokens.accessToken;
     _refresh = tokens.refreshToken;
-    await _store.write(_kAccess, tokens.accessToken);
-    await _store.write(_kRefresh, tokens.refreshToken);
-    await _store.write(_kUser, jsonEncode(tokens.user.toJson()));
-    state = AuthSnapshot(user: tokens.user, hydrating: false);
+    await _serializeStorage(() async {
+      if (_refresh != tokens.refreshToken) return;
+      await _store.write(_kAccess, tokens.accessToken);
+      await _store.write(_kRefresh, tokens.refreshToken);
+      await _store.write(_kUser, jsonEncode(tokens.user.toJson()));
+    });
+    if (_refresh == tokens.refreshToken) {
+      state = AuthSnapshot(user: tokens.user, hydrating: false);
+    }
   }
 
   Future<AuthRefresh?> _refreshSession() async {
     final token = _refresh;
     if (token == null || token.isEmpty) return null;
     final next = await _api.refresh(token);
+    if (_refresh != token) return null;
     _access = next.accessToken;
     _refresh = next.refreshToken;
-    await _store.write(_kAccess, next.accessToken);
-    await _store.write(_kRefresh, next.refreshToken);
-    return next;
+    await _serializeStorage(() async {
+      if (_refresh != next.refreshToken) return;
+      await _store.write(_kAccess, next.accessToken);
+      await _store.write(_kRefresh, next.refreshToken);
+    });
+    return _refresh == next.refreshToken ? next : null;
   }
 }
 
