@@ -52,3 +52,15 @@ lib/
 ```
 
 Telas não falam HTTP. Erros por `error.code`.
+
+## Identidade visual
+
+As quatro logos PNG oficiais ficam em `assets/brand/`, com margens transparentes
+ajustadas a partir dos originais em `../assets/`. `Logo` seleciona extended ou
+short via `layout`, e a variante para fundo escuro via `inverted: true`.
+O cabeçalho de Cuidar usa a marca clara sobre roxo escuro.
+
+A paleta está centralizada em `lib/presentation/theme/colors.dart`: roxo para
+ações principais, ciano para destaques e lavanda para superfícies. O ciano de
+texto é mais escuro para leitura em branco; as cores de alerta e sucesso mantêm
+seu significado.

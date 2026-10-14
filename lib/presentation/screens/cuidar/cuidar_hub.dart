@@ -25,7 +25,7 @@ class CuidarHub extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Logo(size: 32),
+            const BrandHeader(),
             const Spacer(),
             if (!visitante)
               Text(

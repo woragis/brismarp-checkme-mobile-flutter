@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
+import '../theme/colors.dart';
 
 enum LogoLayout { icone, checkme }
 
@@ -13,25 +14,46 @@ class Logo extends StatelessWidget {
 
   final double size;
   final LogoLayout layout;
+
+  /// Use the white variant on dark backgrounds, including brand purple.
   final bool inverted;
 
   @override
   Widget build(BuildContext context) {
-    final asset = switch (layout) {
-      LogoLayout.icone =>
-        inverted ? 'assets/brand/logo-white.svg' : 'assets/brand/logo.svg',
-      LogoLayout.checkme => inverted
-          ? 'assets/brand/logo-checkme-white.svg'
-          : 'assets/brand/logo-checkme.svg',
-    };
-    final ratio = layout == LogoLayout.icone ? 1.0 : 252 / 64;
-    return SvgPicture.asset(
-      asset,
+    final format = layout == LogoLayout.icone ? 'short' : 'extended';
+    final background = inverted ? 'dark' : 'light';
+    return Image.asset(
+      'assets/brand/checkme-$format-logo-$background-bg.png',
       height: size,
-      width: layout == LogoLayout.icone ? size : size * ratio,
-      semanticsLabel: 'CheckMe',
+      width: layout == LogoLayout.icone ? size : size * 4.8,
+      semanticLabel: 'CheckMe',
       fit: BoxFit.contain,
       alignment: Alignment.centerLeft,
+      filterQuality: FilterQuality.high,
+    );
+  }
+}
+
+class BrandHeader extends StatelessWidget {
+  const BrandHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: CheckmeColors.roxoEscuro,
+        borderRadius: BorderRadius.circular(CheckmeRadius.lg),
+      ),
+      child: const Row(
+        children: [
+          Expanded(child: Logo(size: 40, inverted: true)),
+          SizedBox(width: 12),
+          ExcludeSemantics(
+            child: Icon(Icons.favorite_outline, color: CheckmeColors.ciano),
+          ),
+        ],
+      ),
     );
   }
 }

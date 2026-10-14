@@ -61,7 +61,7 @@ class _CampoState extends State<Campo> {
         style: const TextStyle(color: CheckmeColors.texto, fontSize: 14),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: const TextStyle(color: Color(0xFF8A9BB5)),
+          hintStyle: const TextStyle(color: CheckmeColors.textoSecundario),
           border: InputBorder.none,
         ),
         focusNode: _node,

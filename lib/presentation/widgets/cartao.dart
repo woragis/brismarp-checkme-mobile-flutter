@@ -29,7 +29,7 @@ class Cartao extends StatelessWidget {
         border: Border.all(color: CheckmeColors.borda),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x140D47A1),
+            color: CheckmeColors.sombra,
             blurRadius: 16,
             offset: Offset(0, 6),
           ),
@@ -40,7 +40,10 @@ class Cartao extends StatelessWidget {
     if (!animate) return box;
     return box
         .animate()
-        .fadeIn(duration: CheckmeMotion.appear, curve: CheckmeMotion.easeOutCubic)
+        .fadeIn(
+          duration: CheckmeMotion.appear,
+          curve: CheckmeMotion.easeOutCubic,
+        )
         .slideY(
           begin: 0.04,
           end: 0,

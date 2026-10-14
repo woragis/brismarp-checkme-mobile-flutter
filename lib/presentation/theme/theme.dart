@@ -10,6 +10,12 @@ ThemeData checkmeTheme() {
     colorScheme: const ColorScheme.light(
       primary: CheckmeColors.navy,
       secondary: CheckmeColors.care,
+      primaryContainer: CheckmeColors.lavanda,
+      onPrimaryContainer: CheckmeColors.roxo,
+      secondaryContainer: Color(0xFFE0F7FF),
+      onSecondaryContainer: CheckmeColors.care,
+      outline: CheckmeColors.textoSecundario,
+      outlineVariant: CheckmeColors.borda,
       error: CheckmeColors.alerta,
       surface: CheckmeColors.cartao,
       onPrimary: Colors.white,

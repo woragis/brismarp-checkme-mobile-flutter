@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 
 class CheckmeColors {
-  static const navy = Color(0xFF0D47A1);
-  static const azulEscuro = Color(0xFF1565C0);
-  static const care = Color(0xFF2196F3);
-  static const azulClaro = Color(0xFF64B5F6);
-  static const azulNeve = Color(0xFFE3F2FD);
-  static const fundo = Color(0xFFF5F7FA);
+  static const roxo = Color(0xFF2C1B75);
+  static const roxoEscuro = Color(0xFF211454);
+  static const ciano = Color(0xFF00B5EB);
+  // Darker cyan keeps small text readable on white surfaces.
+  static const care = Color(0xFF007A9E);
+  static const lavanda = Color(0xFFF0ECFA);
+  static const navy = roxo;
+  static const azulEscuro = roxoEscuro;
+  static const azulClaro = ciano;
+  static const azulNeve = lavanda;
+  static const fundo = Color(0xFFF8F6FC);
   static const cartao = Color(0xFFFFFFFF);
-  static const texto = Color(0xFF102A4C);
-  static const textoSecundario = Color(0xFF5B6B86);
-  static const borda = Color(0xFFD7E3F4);
+  static const texto = Color(0xFF251B3D);
+  static const textoSecundario = Color(0xFF665D78);
+  static const borda = Color(0xFFE3DDEE);
+  static const sombra = Color(0x142C1B75);
   static const alerta = Color(0xFFC62828);
   static const atencao = Color(0xFFFB8C00);
   static const sucesso = Color(0xFF2E9B57);
-  static const overlay = Color(0x730D47A1);
+  static const overlay = Color(0x73211454);
 }
 
 class CheckmeRadius {
