@@ -26,6 +26,23 @@ GoRouter createRouter() {
               GoRoute(
                 path: '/cuidar',
                 builder: (context, state) => const CuidarScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'especialidades',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.especialidades),
+                  ),
+                  GoRoute(
+                    path: 'rede',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.rede),
+                  ),
+                  GoRoute(
+                    path: 'faq',
+                    builder: (context, state) =>
+                        const ConteudoScreen(tipo: ConteudoTipo.faq),
+                  ),
+                ],
               ),
             ],
           ),
@@ -70,21 +87,6 @@ GoRouter createRouter() {
                   GoRoute(
                     path: 'excluir',
                     builder: (context, state) => const ExcluirScreen(),
-                  ),
-                  GoRoute(
-                    path: 'especialidades',
-                    builder: (context, state) =>
-                        const ConteudoScreen(tipo: ConteudoTipo.especialidades),
-                  ),
-                  GoRoute(
-                    path: 'rede',
-                    builder: (context, state) =>
-                        const ConteudoScreen(tipo: ConteudoTipo.rede),
-                  ),
-                  GoRoute(
-                    path: 'faq',
-                    builder: (context, state) =>
-                        const ConteudoScreen(tipo: ConteudoTipo.faq),
                   ),
                 ],
               ),

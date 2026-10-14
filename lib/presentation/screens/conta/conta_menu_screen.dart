@@ -17,27 +17,6 @@ class ContaMenuScreen extends ConsumerWidget {
     final logado = ref.watch(authControllerProvider).user != null;
     final linhas = <_Item>[
       const _Item(
-        grupo: 'Leitura',
-        titulo: 'Especialidades',
-        apoio: 'O que a rede atende',
-        icone: Icons.medical_services_outlined,
-        path: '/conta/especialidades',
-      ),
-      const _Item(
-        grupo: 'Leitura',
-        titulo: 'Rede credenciada',
-        apoio: 'Particular, nosso valor e economia',
-        icone: Icons.place_outlined,
-        path: '/conta/rede',
-      ),
-      const _Item(
-        grupo: 'Leitura',
-        titulo: 'FAQ',
-        apoio: 'Perguntas frequentes',
-        icone: Icons.help_outline,
-        path: '/conta/faq',
-      ),
-      const _Item(
         grupo: 'Sua conta',
         titulo: 'Ficha',
         apoio: 'Nome, CPF e telefone',

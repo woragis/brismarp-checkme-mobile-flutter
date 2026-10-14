@@ -21,6 +21,7 @@ class CuidarScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final care = ref.watch(careControllerProvider);
+    final noInicio = care.phase is CareVisitante || care.phase is CareEmPaz;
     final child = switch (care.phase) {
       CareVisitante() || CareEmPaz() => const CuidarHub(),
       CareDescrevendo() || CarePedindoConta() => const OrientacaoChat(),
@@ -34,28 +35,56 @@ class CuidarScreen extends ConsumerWidget {
       CareGrave(:final whatsapp) => GraveScreen(whatsapp: whatsapp),
     };
 
-    return Scaffold(
-      backgroundColor: care.phase is CareGrave
-          ? CheckmeColors.alerta
-          : CheckmeColors.fundo,
-      body: Stack(
-        children: [
-          AnimatedSwitcher(
-            duration: CheckmeMotion.hubToChat,
-            switchInCurve: CheckmeMotion.easeOutCubic,
-            switchOutCurve: CheckmeMotion.easeIn,
-            child: KeyedSubtree(
-              key: ValueKey(care.phase.runtimeType),
-              child: child,
+    return PopScope(
+      canPop: noInicio && !care.sheetOpen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _voltar(ref);
+      },
+      child: Scaffold(
+        backgroundColor: care.phase is CareGrave
+            ? CheckmeColors.alerta
+            : CheckmeColors.fundo,
+        body: Stack(
+          children: [
+            AnimatedSwitcher(
+              duration: CheckmeMotion.hubToChat,
+              switchInCurve: CheckmeMotion.easeOutCubic,
+              switchOutCurve: CheckmeMotion.easeIn,
+              child: KeyedSubtree(
+                key: ValueKey(care.phase.runtimeType),
+                child: child,
+              ),
             ),
-          ),
-          if (care.hydrating)
-            const ModalBarrier(dismissible: false, color: Color(0x22FFFFFF)),
-          if (care.sheetOpen || care.phase is CarePedindoConta)
-            const ContaSheet().animate().fadeIn(duration: CheckmeMotion.sheet),
-        ],
+            if (care.hydrating)
+              const ModalBarrier(dismissible: false, color: Color(0x22FFFFFF)),
+            if (care.sheetOpen || care.phase is CarePedindoConta)
+              const ContaSheet().animate().fadeIn(
+                duration: CheckmeMotion.sheet,
+              ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+void _voltar(WidgetRef ref) {
+  final care = ref.read(careControllerProvider);
+  final notifier = ref.read(careControllerProvider.notifier);
+  if (care.sheetOpen || care.phase is CarePedindoConta) {
+    notifier.fecharSheet();
+    return;
+  }
+  switch (care.phase) {
+    case CareEscolhendoHorario():
+      notifier.voltarAosProfissionais();
+    case CareEscolhendoProfissional():
+      notifier.voltarAoPasso();
+    case CareProximoPasso() || CareDescrevendo() || CareGrave():
+      notifier.voltarAoHub();
+    case CareVisitante() || CareEmPaz() || CarePedindoConta():
+      break;
   }
 }
 

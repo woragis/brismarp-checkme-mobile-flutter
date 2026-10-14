@@ -140,6 +140,7 @@ class CareController extends Notifier<CareSnapshot> {
       waiting: true,
       sheetOpen: false,
       clearError: true,
+      rascunho: '',
     );
 
     try {
@@ -264,16 +265,45 @@ class CareController extends Notifier<CareSnapshot> {
     }
   }
 
+  void guardarRascunho(String texto) {
+    if (texto == state.rascunho) return;
+    state = state.copyWith(rascunho: texto);
+  }
+
+  void retomarOrientacao() {
+    final pausa = state.pausa;
+    if (pausa == null) return;
+    state = state.copyWith(phase: pausa, clearPausa: true, sheetOpen: false);
+  }
+
   void voltarAoHub() {
+    final pausa = _pausaDe(state.phase) ?? state.pausa;
     final auth = ref.read(authControllerProvider);
     if (auth.user == null) {
-      state = const CareSnapshot(phase: CareVisitante());
+      state = CareSnapshot(
+        phase: const CareVisitante(),
+        messages: state.messages,
+        sessaoId: state.sessaoId,
+        rascunho: state.rascunho,
+        pausa: pausa,
+      );
       return;
     }
     state = CareSnapshot(
       phase: CareEmPaz(primeiroNome: auth.user!.primeiroNome),
+      messages: state.messages,
       sessaoId: state.sessaoId,
+      rascunho: state.rascunho,
+      pausa: pausa,
     );
+  }
+
+  CarePhase? _pausaDe(CarePhase phase) {
+    return switch (phase) {
+      CareDescrevendo() || CarePedindoConta() => const CareDescrevendo(),
+      CareProximoPasso() || CareGrave() => phase,
+      _ => null,
+    };
   }
 
   void abrirUrgenciaSemConta() {

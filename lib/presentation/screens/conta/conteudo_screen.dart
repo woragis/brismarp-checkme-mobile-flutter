@@ -53,6 +53,7 @@ class _ConteudoScreenState extends ConsumerState<ConteudoScreen> {
     };
     return TelaInterna(
       titulo: _titulo,
+      destinoSemPilha: '/cuidar',
       child: conteudo.loading && vazio
           ? const Center(
               child: CircularProgressIndicator(color: CheckmeColors.navy),

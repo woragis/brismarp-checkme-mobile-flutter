@@ -20,7 +20,19 @@ class _OrientacaoChatState extends ConsumerState<OrientacaoChat> {
   final _scroll = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    _texto.text = ref.read(careControllerProvider).rascunho;
+    _texto.addListener(_sincronizarRascunho);
+  }
+
+  void _sincronizarRascunho() {
+    ref.read(careControllerProvider.notifier).guardarRascunho(_texto.text);
+  }
+
+  @override
   void dispose() {
+    _texto.removeListener(_sincronizarRascunho);
     _texto.dispose();
     _scroll.dispose();
     super.dispose();
@@ -94,7 +106,10 @@ class _OrientacaoChatState extends ConsumerState<OrientacaoChat> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 care.errorMessage!,
-                style: const TextStyle(color: CheckmeColors.alerta, fontSize: 13),
+                style: const TextStyle(
+                  color: CheckmeColors.alerta,
+                  fontSize: 13,
+                ),
               ),
             ),
           Padding(
@@ -139,33 +154,37 @@ class Bolha extends StatelessWidget {
     final mine = message.fromUser;
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * 0.82,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: mine ? CheckmeColors.navy : CheckmeColors.azulNeve,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(mine ? 16 : 4),
-            bottomRight: Radius.circular(mine ? 4 : 16),
-          ),
-        ),
-        child: Text(
-          message.text,
-          style: TextStyle(
-            color: mine ? Colors.white : CheckmeColors.texto,
-            fontSize: 14,
-            height: 1.4,
-          ),
-        ),
-      )
-          .animate()
-          .fadeIn(duration: CheckmeMotion.bubble)
-          .slideY(begin: 0.08, end: 0, duration: CheckmeMotion.bubble),
+      child:
+          Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.82,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: mine ? CheckmeColors.navy : CheckmeColors.azulNeve,
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(16),
+                    topRight: const Radius.circular(16),
+                    bottomLeft: Radius.circular(mine ? 16 : 4),
+                    bottomRight: Radius.circular(mine ? 4 : 16),
+                  ),
+                ),
+                child: Text(
+                  message.text,
+                  style: TextStyle(
+                    color: mine ? Colors.white : CheckmeColors.texto,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: CheckmeMotion.bubble)
+              .slideY(begin: 0.08, end: 0, duration: CheckmeMotion.bubble),
     );
   }
 }

@@ -71,6 +71,8 @@ class CareSnapshot {
     this.errorCode,
     this.sheetOpen = false,
     this.hydrating = false,
+    this.rascunho = '',
+    this.pausa,
   });
 
   final CarePhase phase;
@@ -81,6 +83,10 @@ class CareSnapshot {
   final String? errorCode;
   final bool sheetOpen;
   final bool hydrating;
+  final String rascunho;
+  final CarePhase? pausa;
+
+  bool get orientacaoAberta => pausa != null;
 
   CareSnapshot copyWith({
     CarePhase? phase,
@@ -93,6 +99,9 @@ class CareSnapshot {
     bool clearError = false,
     bool? sheetOpen,
     bool? hydrating,
+    String? rascunho,
+    CarePhase? pausa,
+    bool clearPausa = false,
   }) {
     return CareSnapshot(
       phase: phase ?? this.phase,
@@ -103,6 +112,8 @@ class CareSnapshot {
       errorCode: clearError ? null : (errorCode ?? this.errorCode),
       sheetOpen: sheetOpen ?? this.sheetOpen,
       hydrating: hydrating ?? this.hydrating,
+      rascunho: rascunho ?? this.rascunho,
+      pausa: clearPausa ? null : (pausa ?? this.pausa),
     );
   }
 }
