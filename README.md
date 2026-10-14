@@ -73,8 +73,9 @@ carregamento paralelo de horários e reutilização da chave de agendamento.
 Coleções `null` são aceitas como vazias para compatibilidade com slices Go.
 
 O agendamento envia `X-Idempotency-Key` e reutiliza a chave em tentativas da mesma
-operação. A garantia no servidor ainda depende de corrigir o armazenamento Redis:
-o backend atual usa `SetNX` também para finalizar uma entrada `pending`.
+operação. O backend finaliza a reserva com uma operação Redis atômica, isola as chaves
+por paciente e pedido e libera tentativas que falham antes de criar a consulta.
+A janela de reutilização no servidor é de dez minutos.
 
 Para validar a API real, suba o backend com PostgreSQL e Redis e execute
 `dart run tool/smoke_api.dart`. Esse smoke cria uma conta de teste; os testes Dio
