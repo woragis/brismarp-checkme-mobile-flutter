@@ -116,6 +116,62 @@ class CheckmeApi {
     return lista;
   }
 
+  Future<SugestaoConsulta?> sugerirProfissional(String especialidade) async {
+    final path =
+        '/professionals/match?${Uri(queryParameters: {'especialidade': especialidade}).query}';
+    final data = await _client.getJson(path);
+    if (data['encontrado'] != true) return null;
+    final pro = _map(data['profissional']);
+    final profissionalId = _requiredString(pro, 'id');
+    final profissional = Profissional(
+      id: profissionalId,
+      nome: _requiredString(pro, 'nome'),
+      especialidade: _specialties(pro['specialties']),
+    );
+    final horario = Horario(
+      id: '',
+      startsAt: _date(data, 'startsAt'),
+      endsAt: _date(data, 'endsAt'),
+    );
+    return SugestaoConsulta(profissional: profissional, horario: horario);
+  }
+
+  Future<List<ParceiroPresencial>> redePresencial({
+    String cidade = '',
+    double? latitude,
+    double? longitude,
+  }) async {
+    final query = <String, String>{if (cidade.isNotEmpty) 'cidade': cidade};
+    if (latitude != null && longitude != null) {
+      query['latitude'] = '$latitude';
+      query['longitude'] = '$longitude';
+    }
+    final path =
+        '/rede-credenciada/prestadores${query.isEmpty ? '' : '?${Uri(queryParameters: query).query}'}';
+    final raw = await _client.getList(path, auth: false);
+    return raw.map((item) {
+      final m = _map(item);
+      return ParceiroPresencial(
+        id: _requiredString(m, 'id'),
+        nome: _requiredString(m, 'nome'),
+        tipo: m['tipo']?.toString() ?? '',
+        cidade: m['cidade']?.toString() ?? '',
+        uf: m['uf']?.toString() ?? 'AL',
+        telefone: m['telefone']?.toString() ?? '',
+        endereco: m['endereco']?.toString() ?? '',
+        latitude: (m['latitude'] as num?)?.toDouble(),
+        longitude: (m['longitude'] as num?)?.toDouble(),
+        especialidades: (m['especialidades'] as List? ?? const [])
+            .map((e) => e.toString())
+            .toList(),
+        servicos: (m['servicos'] as List? ?? const [])
+            .map((e) => e.toString())
+            .toList(),
+        distanciaKm: (m['distanciaKm'] as num?)?.toDouble(),
+      );
+    }).toList();
+  }
+
   Future<List<Horario>> horarios(String profissionalId) async {
     final raw = await _client.getList('/professionals/$profissionalId/slots');
     return raw.map((item) {

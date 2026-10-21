@@ -104,8 +104,8 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
           const SizedBox(height: 16),
           Text(
             visitante
-                ? 'Conte o que está sentindo. A orientação inicial organiza os sintomas e indica o próximo passo — sem diagnóstico e sem substituir um profissional.'
-                : 'Quando algo não estiver bem, comece pela orientação. Ela indica o próximo passo certo.',
+                ? 'Encontre um médico para consulta online ou descubra atendimento presencial perto de você.'
+                : 'Encontre atendimento online ou presencial para você.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           if (care.orientacaoAberta) ...[
@@ -137,8 +137,18 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
           ],
           const SizedBox(height: 20),
           Botao(
-            titulo: 'Estou sentindo algo',
+            titulo: 'Encontrar consulta online',
             seta: true,
+            onPressed: () => context.go('/cuidar/online'),
+          ),
+          const SizedBox(height: 8),
+          Botao(
+            titulo: 'Encontrar atendimento presencial',
+            variante: BotaoVariante.secundario,
+            onPressed: () => context.go('/cuidar/rede'),
+          ),
+          const SizedBox(height: 4),
+          TextButton.icon(
             onPressed: () {
               final notifier = ref.read(careControllerProvider.notifier);
               if (care.orientacaoAberta) {
@@ -147,6 +157,8 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
                 notifier.comecarOrientacao();
               }
             },
+            icon: const Icon(Icons.chat_bubble_outline, size: 18),
+            label: const Text('Quero orientação sobre sintomas'),
           ),
           if (visitante) ...[
             const SizedBox(height: 8),
@@ -188,7 +200,7 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
           ],
           const SizedBox(height: 28),
           Text(
-            'Para consultar',
+            'Explore a rede',
             style: Theme.of(context).textTheme.bodyMedium
                 ?.copyWith(fontSize: 12, fontWeight: FontWeight.w600),
           ),
@@ -202,9 +214,16 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
           const SizedBox(height: 8),
           const _Atalho(
             titulo: 'Rede credenciada',
-            apoio: 'Particular, nosso valor e economia',
+            apoio: 'Médicos, clínicas e exames presenciais',
             icone: Icons.place_outlined,
             path: '/cuidar/rede',
+          ),
+          const SizedBox(height: 8),
+          const _Atalho(
+            titulo: 'Descontos da rede',
+            apoio: 'Consulte valores e economias cadastrados',
+            icone: Icons.sell_outlined,
+            path: '/cuidar/descontos',
           ),
           const SizedBox(height: 8),
           const _Atalho(
@@ -218,7 +237,7 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
             data: (ok) => ok
                 ? const SizedBox.shrink()
                 : Text(
-                    'Orientação indisponível no momento. Verifique a API.',
+                    'Busca de atendimento indisponível no momento. Verifique a conexão.',
                     style: Theme.of(context).textTheme.bodyMedium
                         ?.copyWith(color: CheckmeColors.alerta),
                   ),

@@ -21,6 +21,42 @@ class Profissional {
   }
 }
 
+class SugestaoConsulta {
+  const SugestaoConsulta({required this.profissional, required this.horario});
+  final Profissional profissional;
+  final Horario horario;
+}
+
+class ParceiroPresencial {
+  const ParceiroPresencial({
+    required this.id,
+    required this.nome,
+    required this.tipo,
+    required this.cidade,
+    required this.uf,
+    required this.telefone,
+    required this.endereco,
+    this.latitude,
+    this.longitude,
+    required this.especialidades,
+    required this.servicos,
+    this.distanciaKm,
+  });
+
+  final String id;
+  final String nome;
+  final String tipo;
+  final String cidade;
+  final String uf;
+  final String telefone;
+  final String endereco;
+  final double? latitude;
+  final double? longitude;
+  final List<String> especialidades;
+  final List<String> servicos;
+  final double? distanciaKm;
+}
+
 class Horario {
   const Horario({
     required this.id,

@@ -10,6 +10,8 @@ import '../screens/conta/ficha_screen.dart';
 import '../screens/conta/porta_screen.dart';
 import '../screens/cuidar/cuidar_screen.dart';
 import '../screens/planos/planos_screen.dart';
+import '../screens/rede/rede_screen.dart';
+import '../screens/online/online_screen.dart';
 import 'app_shell.dart';
 
 GoRouter createRouter() {
@@ -34,6 +36,14 @@ GoRouter createRouter() {
                   ),
                   GoRoute(
                     path: 'rede',
+                    builder: (context, state) => const RedeScreen(),
+                  ),
+                  GoRoute(
+                    path: 'online',
+                    builder: (context, state) => const OnlineScreen(),
+                  ),
+                  GoRoute(
+                    path: 'descontos',
                     builder: (context, state) =>
                         const ConteudoScreen(tipo: ConteudoTipo.rede),
                   ),

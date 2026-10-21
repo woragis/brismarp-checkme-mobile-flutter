@@ -1,6 +1,6 @@
 # CheckMe — app do paciente (Flutter)
 
-Recorte 1: **Cuidar + Orientação**. Mapa em [`arquitetura/frontend/CUIDAR-ORIENTACAO.md`](../arquitetura/frontend/CUIDAR-ORIENTACAO.md).
+App do paciente para busca e agendamento de consultas online e busca de parceiros presenciais. A orientação por IA continua opcional.
 
 O Expo em `checkme/mobile` está **congelado**. Não porta telas de lá.
 
@@ -31,15 +31,16 @@ Seed de login: `patient@checkme.local` / `checkme-patient-2026`. Grave sem IA: `
 
 Celular físico: `--dart-define=API_URL=http://IP-DA-MAQUINA:8000`.
 
-## Recorte 1
+## Fluxos do paciente
 
 Quatro abas: Cuidar, Consultas, Planos e Conta (menu de uma linha por função).
 
-- Visitante vê o hub e começa a orientação sem conta.
-- Login no momento do valor (sheet), com checkbox LGPD.
-- `ALERTA_GRAVE` → tela de urgência (SAMU 192 / WhatsApp). Sem agendar. Sem SOAP.
-- `LEVE` / `MODERADO` → beat do check, com o relato e o próximo passo. A pessoa toca em Ver profissionais. Sem auto-navegar para a agenda.
-- Emergência nunca bloqueada por login.
+- Visitante pode procurar especialidade e visualizar a melhor opção online disponível.
+- A reserva só acontece após confirmação do paciente autenticado e verificado.
+- Consultas online abrem a sala externa pelo link associado ao agendamento.
+- A rede presencial aceita localização do aparelho ou seleção manual de cidade.
+- Parceiros sem coordenadas validadas aparecem por cidade e não são anunciados como próximos.
+- A orientação por IA permanece acessível como caminho opcional; ela não é necessária para encontrar atendimento.
 
 ## Pasta
 
