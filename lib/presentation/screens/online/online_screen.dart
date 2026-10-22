@@ -57,6 +57,8 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
   }
 
   Future<void> _buscar() async {
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) return;
     final especialidade = _selecionada;
     if (especialidade == null) return;
     setState(() {
@@ -130,6 +132,16 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
   @override
   Widget build(BuildContext context) {
     final agenda = ref.watch(agendaControllerProvider);
+    final auth = ref.watch(authControllerProvider);
+    ref.listen(authControllerProvider, (previous, next) {
+      if (previous?.user?.id != next.user?.id) {
+        setState(() {
+          _sugestao = null;
+          _codigo = false;
+          _codigoController.clear();
+        });
+      }
+    });
     final pro = _sugestao?.profissional;
     final slot = _sugestao?.horario;
     return Scaffold(
@@ -141,6 +153,29 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
             'Escolha uma especialidade. Vamos encontrar o próximo horário disponível; você confirma antes de reservar.',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
+          if (!auth.hydrating && auth.user == null) ...[
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Entre para continuar'),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Entre na sua conta para ver médicos e horários disponíveis.',
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton(
+                      onPressed: () => context.push('/conta/porta'),
+                      child: const Text('Entrar ou criar conta'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           if (_carregandoEspecialidades)
             const Center(child: CircularProgressIndicator())
@@ -165,25 +200,28 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
                     }),
             ),
           const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: _buscando || _selecionada == null ? null : _buscar,
-            icon: _buscando
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.search),
-            label: Text(_buscando ? 'Procurando médico…' : 'Encontrar médico'),
-          ),
+          if (auth.user != null)
+            FilledButton.icon(
+              onPressed: _buscando || _selecionada == null ? null : _buscar,
+              icon: _buscando
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.search),
+              label: Text(
+                _buscando ? 'Procurando médico…' : 'Encontrar médico',
+              ),
+            ),
           if (_erro != null) ...[
             const SizedBox(height: 12),
             Text(_erro!, style: const TextStyle(color: CheckmeColors.alerta)),
           ],
-          if (pro != null && slot != null) ...[
+          if (auth.user != null && pro != null && slot != null) ...[
             const SizedBox(height: 20),
             Card(
               child: Padding(
@@ -227,7 +265,7 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
               ),
             ),
           ],
-          if (_codigo) ...[
+          if (auth.user != null && _codigo) ...[
             const SizedBox(height: 12),
             TextField(
               controller: _codigoController,
@@ -251,7 +289,10 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
               child: const Text('Reenviar código'),
             ),
           ],
-          if (_sugestao == null && !_buscando && _selecionada != null) ...[
+          if (auth.user != null &&
+              _sugestao == null &&
+              !_buscando &&
+              _selecionada != null) ...[
             const SizedBox(height: 14),
             const Text(
               'A busca considera profissionais aprovados e horários livres. A reserva só acontece quando você confirma.',

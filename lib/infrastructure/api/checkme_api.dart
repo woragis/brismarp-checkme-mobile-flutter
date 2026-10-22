@@ -141,14 +141,11 @@ class CheckmeApi {
     double? latitude,
     double? longitude,
   }) async {
-    final query = <String, String>{if (cidade.isNotEmpty) 'cidade': cidade};
-    if (latitude != null && longitude != null) {
-      query['latitude'] = '$latitude';
-      query['longitude'] = '$longitude';
-    }
-    final path =
-        '/rede-credenciada/prestadores${query.isEmpty ? '' : '?${Uri(queryParameters: query).query}'}';
-    final raw = await _client.getList(path, auth: false);
+    final raw = await _client.postList('/rede-credenciada/buscar', {
+      if (cidade.isNotEmpty) 'cidade': cidade,
+      if (latitude != null && longitude != null) 'latitude': latitude,
+      if (latitude != null && longitude != null) 'longitude': longitude,
+    });
     return raw.map((item) {
       final m = _map(item);
       return ParceiroPresencial(

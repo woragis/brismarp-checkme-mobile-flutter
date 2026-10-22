@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../domain/agenda/models.dart';
+import '../../../application/identity/auth_controller.dart';
 import '../../../infrastructure/api/checkme_api.dart';
 import '../../theme/colors.dart';
 
@@ -45,6 +46,8 @@ class _RedeScreenState extends ConsumerState<RedeScreen> {
     double? latitude,
     double? longitude,
   }) async {
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) return;
     setState(() {
       _carregando = true;
       _erro = null;
@@ -114,6 +117,17 @@ class _RedeScreenState extends ConsumerState<RedeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = ref.watch(authControllerProvider);
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.user != null && previous?.user?.id != next.user?.id) {
+        _carregarCidade();
+      } else if (next.user == null && previous?.user != null) {
+        setState(() {
+          _parceiros = const [];
+          _porDistancia = false;
+        });
+      }
+    });
     final termo = _busca.text.trim().toLowerCase();
     final itens = _parceiros
         .where(
@@ -133,80 +147,107 @@ class _RedeScreenState extends ConsumerState<RedeScreen> {
             'Encontre médicos, clínicas e exames presenciais.',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 18),
-          DropdownButtonFormField<String>(
-            value: _cidade,
-            decoration: const InputDecoration(
-              labelText: 'Cidade',
-              border: OutlineInputBorder(),
-            ),
-            items: _cidades
-                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                .toList(),
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() => _cidade = value);
-              _carregar(cidade: value);
-            },
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: _localizando ? null : _usarLocalizacao,
-            icon: _localizando
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.my_location),
-            label: Text(
-              _localizando ? 'Buscando localização…' : 'Usar minha localização',
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _busca,
-            onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Especialidade, exame ou clínica',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          if (_erro != null) ...[
-            const SizedBox(height: 12),
-            Text(_erro!, style: const TextStyle(color: CheckmeColors.alerta)),
-          ],
-          const SizedBox(height: 18),
-          if (_carregando)
-            const Center(
+          if (!auth.hydrating && auth.user == null) ...[
+            const SizedBox(height: 16),
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Entre para ver a rede'),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Entre na sua conta para consultar parceiros, endereços e contatos presenciais.',
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton(
+                      onPressed: () => context.push('/conta/porta'),
+                      child: const Text('Entrar ou criar conta'),
+                    ),
+                  ],
+                ),
               ),
-            )
-          else if (itens.isEmpty)
-            _Vazio(
-              erro: _erro != null,
-              porDistancia: _porDistancia,
-              onCidade: () => _carregar(cidade: _cidade),
-            )
-          else ...[
-            Text(
-              _porDistancia ? 'Parceiros próximos' : 'Rede em $_cidade',
-              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
+          if (auth.user != null) ...[
+            const SizedBox(height: 18),
+            DropdownButtonFormField<String>(
+              value: _cidade,
+              decoration: const InputDecoration(
+                labelText: 'Cidade',
+                border: OutlineInputBorder(),
+              ),
+              items: _cidades
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _cidade = value);
+                _carregar(cidade: value);
+              },
             ),
             const SizedBox(height: 10),
-            for (final parceiro in itens) ...[
-              _ParceiroCard(parceiro: parceiro),
-              const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: _localizando ? null : _usarLocalizacao,
+              icon: _localizando
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location),
+              label: Text(
+                _localizando
+                    ? 'Buscando localização…'
+                    : 'Usar minha localização',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _busca,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Especialidade, exame ou clínica',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_erro != null) ...[
+              const SizedBox(height: 12),
+              Text(_erro!, style: const TextStyle(color: CheckmeColors.alerta)),
             ],
+            const SizedBox(height: 18),
+            if (_carregando)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (itens.isEmpty)
+              _Vazio(
+                erro: _erro != null,
+                porDistancia: _porDistancia,
+                onCidade: () => _carregar(cidade: _cidade),
+              )
+            else ...[
+              Text(
+                _porDistancia ? 'Parceiros próximos' : 'Rede em $_cidade',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 10),
+              for (final parceiro in itens) ...[
+                _ParceiroCard(parceiro: parceiro),
+                const SizedBox(height: 10),
+              ],
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'A distância aparece quando o endereço do parceiro está validado.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
-          const SizedBox(height: 8),
-          Text(
-            'A distância aparece quando o endereço do parceiro está validado.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
         ],
       ),
     );

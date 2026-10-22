@@ -208,6 +208,26 @@ class ApiClient {
     }
   }
 
+  Future<List<dynamic>> postList(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) async {
+    try {
+      final res = await _dio.post<dynamic>(
+        path,
+        data: body,
+        options: Options(extra: {'skipAuth': !auth}),
+      );
+      final data = res.data;
+      if (data is List) return data;
+      if (data == null) return const [];
+      throw invalidResponse();
+    } on DioException catch (e) {
+      throw _toApi(e);
+    }
+  }
+
   Future<Map<String, dynamic>> patchJson(
     String path,
     Map<String, dynamic> body,
