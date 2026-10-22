@@ -15,6 +15,7 @@ import '../../widgets/botao.dart';
 import '../../widgets/cartao.dart';
 import '../../widgets/logo.dart';
 import '../../widgets/press_linha.dart';
+import '../../widgets/tutorial_button.dart';
 
 class CuidarHub extends ConsumerStatefulWidget {
   const CuidarHub({super.key});
@@ -136,29 +137,38 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
             ),
           ],
           const SizedBox(height: 20),
-          Botao(
-            titulo: 'Encontrar consulta online',
-            seta: true,
-            onPressed: () => context.go('/cuidar/online'),
+          TutorialAnchor(
+            id: 'home-online',
+            child: Botao(
+              titulo: 'Encontrar consulta online',
+              seta: true,
+              onPressed: () => context.go('/cuidar/online'),
+            ),
           ),
           const SizedBox(height: 8),
-          Botao(
-            titulo: 'Encontrar atendimento presencial',
-            variante: BotaoVariante.secundario,
-            onPressed: () => context.go('/cuidar/rede'),
+          TutorialAnchor(
+            id: 'home-presencial',
+            child: Botao(
+              titulo: 'Encontrar atendimento presencial',
+              variante: BotaoVariante.secundario,
+              onPressed: () => context.go('/cuidar/rede'),
+            ),
           ),
           const SizedBox(height: 4),
-          TextButton.icon(
-            onPressed: () {
-              final notifier = ref.read(careControllerProvider.notifier);
-              if (care.orientacaoAberta) {
-                notifier.novaOrientacao();
-              } else {
-                notifier.comecarOrientacao();
-              }
-            },
-            icon: const Icon(Icons.chat_bubble_outline, size: 18),
-            label: const Text('Ajude-me a escolher um profissional'),
+          TutorialAnchor(
+            id: 'home-orientation',
+            child: TextButton.icon(
+              onPressed: () {
+                final notifier = ref.read(careControllerProvider.notifier);
+                if (care.orientacaoAberta) {
+                  notifier.novaOrientacao();
+                } else {
+                  notifier.comecarOrientacao();
+                }
+              },
+              icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              label: const Text('Ajude-me a escolher um profissional'),
+            ),
           ),
           if (visitante) ...[
             const SizedBox(height: 8),

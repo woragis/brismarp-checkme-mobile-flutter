@@ -14,6 +14,7 @@ import '../../widgets/ir_para_cuidar.dart';
 import '../../widgets/logo.dart';
 import '../../widgets/press_linha.dart';
 import '../../widgets/selo.dart';
+import '../../widgets/tutorial_button.dart';
 
 const consultasVazias =
     'Você ainda não tem consulta marcada. Reserve um horário a partir da orientação.';
@@ -51,6 +52,10 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
     });
     final auth = ref.watch(authControllerProvider);
     final agenda = ref.watch(agendaControllerProvider);
+    final proposalIndex = agenda.consultas.indexWhere(
+      (c) => c.status == 'reagendada',
+    );
+    final videoIndex = agenda.consultas.indexWhere((c) => c.podeEntrar);
     final logado = auth.user != null;
     final vazio = !logado || agenda.consultas.isEmpty;
 
@@ -91,12 +96,17 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
                     for (var i = 0; i < agenda.consultas.length; i++) ...[
                       Cascata(
                         index: i,
-                        child: Cartao(
-                          animate: false,
-                          child: _cardConsulta(
-                            context,
-                            agenda,
-                            agenda.consultas[i],
+                        child: TutorialAnchor(
+                          id: i == 0 ? 'consultas-item' : 'consultas-item-$i',
+                          child: Cartao(
+                            animate: false,
+                            child: _cardConsulta(
+                              context,
+                              agenda,
+                              agenda.consultas[i],
+                              tutorialProposal: i == proposalIndex,
+                              tutorialVideo: i == videoIndex,
+                            ),
                           ),
                         ),
                       ),
@@ -122,11 +132,37 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
   Widget _cardConsulta(
     BuildContext context,
     AgendaSnapshot agenda,
-    Consulta consulta,
-  ) {
+    Consulta consulta, {
+    required bool tutorialProposal,
+    required bool tutorialVideo,
+  }) {
     final selo = seloDaConsulta(
       status: consulta.status,
       videoStatus: consulta.videoStatus,
+    );
+    final proposalActions = Wrap(
+      spacing: 4,
+      children: [
+        Botao(
+          titulo: 'Aceitar horário',
+          expand: false,
+          onPressed: agenda.reservando
+              ? null
+              : () => ref
+                    .read(agendaControllerProvider.notifier)
+                    .responderProposta(consulta.id, aceitar: true),
+        ),
+        Botao(
+          titulo: 'Recusar proposta',
+          expand: false,
+          variante: BotaoVariante.terciario,
+          onPressed: agenda.reservando
+              ? null
+              : () => ref
+                    .read(agendaControllerProvider.notifier)
+                    .responderProposta(consulta.id, aceitar: false),
+        ),
+      ],
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,36 +186,26 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
         ),
         if (consulta.podeEntrar) ...[
           const SizedBox(height: 12),
-          Botao(
-            titulo: 'Entrar na consulta',
-            onPressed: agenda.reservando ? null : () => _entrar(consulta.id),
-          ),
+          if (tutorialVideo)
+            TutorialAnchor(
+              id: 'consultas-video',
+              child: Botao(
+                titulo: 'Entrar na consulta',
+                onPressed: agenda.reservando
+                    ? null
+                    : () => _entrar(consulta.id),
+              ),
+            )
+          else
+            Botao(
+              titulo: 'Entrar na consulta',
+              onPressed: agenda.reservando ? null : () => _entrar(consulta.id),
+            ),
         ],
         if (consulta.status == 'reagendada')
-          Wrap(
-            spacing: 4,
-            children: [
-              Botao(
-                titulo: 'Aceitar horário',
-                expand: false,
-                onPressed: agenda.reservando
-                    ? null
-                    : () => ref
-                          .read(agendaControllerProvider.notifier)
-                          .responderProposta(consulta.id, aceitar: true),
-              ),
-              Botao(
-                titulo: 'Recusar proposta',
-                expand: false,
-                variante: BotaoVariante.terciario,
-                onPressed: agenda.reservando
-                    ? null
-                    : () => ref
-                          .read(agendaControllerProvider.notifier)
-                          .responderProposta(consulta.id, aceitar: false),
-              ),
-            ],
-          ),
+          tutorialProposal
+              ? TutorialAnchor(id: 'consultas-proposal', child: proposalActions)
+              : proposalActions,
         if ([
               'reservada',
               'reagendada',

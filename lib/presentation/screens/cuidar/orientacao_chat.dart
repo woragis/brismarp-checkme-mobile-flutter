@@ -7,6 +7,7 @@ import '../../../domain/care/models.dart';
 import '../../theme/colors.dart';
 import '../../theme/motion.dart';
 import '../../widgets/campo.dart';
+import '../../widgets/tutorial_button.dart';
 
 class OrientacaoChat extends ConsumerStatefulWidget {
   const OrientacaoChat({super.key});
@@ -117,13 +118,16 @@ class _OrientacaoChatState extends ConsumerState<OrientacaoChat> {
             child: Row(
               children: [
                 Expanded(
-                  child: Campo(
-                    controller: _texto,
-                    hint: 'Que tipo de atendimento você procura?',
-                    minLines: 1,
-                    maxLines: 4,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _enviar(),
+                  child: TutorialAnchor(
+                    id: 'orientation-input',
+                    child: Campo(
+                      controller: _texto,
+                      hint: 'Que tipo de atendimento você procura?',
+                      minLines: 1,
+                      maxLines: 4,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _enviar(),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

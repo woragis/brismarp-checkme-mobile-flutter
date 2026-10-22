@@ -7,6 +7,7 @@ import '../../../domain/agenda/models.dart';
 import '../../../application/identity/auth_controller.dart';
 import '../../../infrastructure/api/checkme_api.dart';
 import '../../theme/colors.dart';
+import '../../widgets/tutorial_button.dart';
 
 class RedeScreen extends ConsumerStatefulWidget {
   const RedeScreen({super.key});
@@ -172,35 +173,41 @@ class _RedeScreenState extends ConsumerState<RedeScreen> {
           ],
           if (auth.user != null) ...[
             const SizedBox(height: 18),
-            DropdownButtonFormField<String>(
-              value: _cidade,
-              decoration: const InputDecoration(
-                labelText: 'Cidade',
-                border: OutlineInputBorder(),
+            TutorialAnchor(
+              id: 'network-city',
+              child: DropdownButtonFormField<String>(
+                value: _cidade,
+                decoration: const InputDecoration(
+                  labelText: 'Cidade',
+                  border: OutlineInputBorder(),
+                ),
+                items: _cidades
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _cidade = value);
+                  _carregar(cidade: value);
+                },
               ),
-              items: _cidades
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _cidade = value);
-                _carregar(cidade: value);
-              },
             ),
             const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: _localizando ? null : _usarLocalizacao,
-              icon: _localizando
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.my_location),
-              label: Text(
-                _localizando
-                    ? 'Buscando localização…'
-                    : 'Usar minha localização',
+            TutorialAnchor(
+              id: 'network-location',
+              child: OutlinedButton.icon(
+                onPressed: _localizando ? null : _usarLocalizacao,
+                icon: _localizando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.my_location),
+                label: Text(
+                  _localizando
+                      ? 'Buscando localização…'
+                      : 'Usar minha localização',
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -237,8 +244,11 @@ class _RedeScreenState extends ConsumerState<RedeScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 10),
-              for (final parceiro in itens) ...[
-                _ParceiroCard(parceiro: parceiro),
+              for (var i = 0; i < itens.length; i++) ...[
+                TutorialAnchor(
+                  id: i == 0 ? 'network-provider' : 'network-provider-$i',
+                  child: _ParceiroCard(parceiro: itens[i]),
+                ),
                 const SizedBox(height: 10),
               ],
             ],

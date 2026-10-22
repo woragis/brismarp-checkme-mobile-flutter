@@ -7,6 +7,7 @@ import '../../theme/colors.dart';
 import '../../widgets/botao.dart';
 import '../../widgets/cartao.dart';
 import '../../widgets/check_mark.dart';
+import '../../widgets/tutorial_button.dart';
 
 class ProximoPassoScreen extends ConsumerWidget {
   const ProximoPassoScreen({
@@ -76,11 +77,15 @@ class ProximoPassoScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Botao(
-              titulo: 'Ver profissionais',
-              seta: true,
-              onPressed: () =>
-                  ref.read(careControllerProvider.notifier).verProfissionais(),
+            TutorialAnchor(
+              id: 'care-next-step',
+              child: Botao(
+                titulo: 'Ver profissionais',
+                seta: true,
+                onPressed: () => ref
+                    .read(careControllerProvider.notifier)
+                    .verProfissionais(),
+              ),
             ),
             const SizedBox(height: 8),
             Botao(

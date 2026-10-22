@@ -11,6 +11,7 @@ import '../../widgets/cascata.dart';
 import '../../widgets/ir_para_cuidar.dart';
 import '../../widgets/logo.dart';
 import '../../widgets/selo.dart';
+import '../../widgets/tutorial_button.dart';
 
 class PlanosScreen extends ConsumerStatefulWidget {
   const PlanosScreen({super.key});
@@ -68,50 +69,62 @@ class _PlanosScreenState extends ConsumerState<PlanosScreen> {
               const SizedBox(height: 8),
               Cascata(
                 index: i,
-                child: Cartao(
-                  animate: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _reais(planos.planos[i].precoParcela),
-                              style: Theme.of(context).textTheme.headlineMedium
-                                  ?.copyWith(fontSize: 26),
+                child: TutorialAnchor(
+                  id: i == 0 ? 'plans-option' : 'plans-option-$i',
+                  child: Cartao(
+                    animate: false,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _reais(planos.planos[i].precoParcela),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(fontSize: 26),
+                              ),
+                            ),
+                            if (planos.planoAtivo == planos.planos[i].nome)
+                              const Selo(
+                                texto: 'Seu plano',
+                                tom: SeloTom.sucesso,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          planos.planos[i].nome,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          planos.planos[i].descricaoParcela.isEmpty
+                              ? '${planos.planos[i].parcelas}x'
+                              : '${planos.planos[i].parcelas}x · ${planos.planos[i].descricaoParcela}',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        if (logado) ...[
+                          const SizedBox(height: 8),
+                          TutorialAnchor(
+                            id: i == 0
+                                ? 'plans-subscribe'
+                                : 'plans-subscribe-$i',
+                            child: Botao(
+                              titulo: planos.contratando
+                                  ? 'Aguarde…'
+                                  : 'Contratar',
+                              onPressed: planos.contratando
+                                  ? null
+                                  : () => ref
+                                        .read(planosControllerProvider.notifier)
+                                        .contratar(planos.planos[i].id),
                             ),
                           ),
-                          if (planos.planoAtivo == planos.planos[i].nome)
-                            const Selo(
-                              texto: 'Seu plano',
-                              tom: SeloTom.sucesso,
-                            ),
                         ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        planos.planos[i].nome,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        planos.planos[i].descricaoParcela.isEmpty
-                            ? '${planos.planos[i].parcelas}x'
-                            : '${planos.planos[i].parcelas}x · ${planos.planos[i].descricaoParcela}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      if (logado) ...[
-                        const SizedBox(height: 8),
-                        Botao(
-                          titulo: planos.contratando ? 'Aguarde…' : 'Contratar',
-                          onPressed: planos.contratando
-                              ? null
-                              : () => ref
-                                    .read(planosControllerProvider.notifier)
-                                    .contratar(planos.planos[i].id),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -122,7 +135,10 @@ class _PlanosScreenState extends ConsumerState<PlanosScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Campo(controller: _cupom, hint: 'Cupom'),
+                    child: TutorialAnchor(
+                      id: 'plans-coupon',
+                      child: Campo(controller: _cupom, hint: 'Cupom'),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Botao(

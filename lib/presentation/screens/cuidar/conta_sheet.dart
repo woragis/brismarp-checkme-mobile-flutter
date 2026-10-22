@@ -10,6 +10,7 @@ import '../../theme/motion.dart';
 import '../../widgets/botao.dart';
 import '../../widgets/campo.dart';
 import '../../widgets/logo.dart';
+import '../../widgets/tutorial_button.dart';
 
 class ContaSheet extends ConsumerStatefulWidget {
   const ContaSheet({super.key});
@@ -335,13 +336,16 @@ class _ContaSheetState extends ConsumerState<ContaSheet> {
                                 ),
                               ],
                               const SizedBox(height: 16),
-                              Botao(
-                                titulo: _enviando
-                                    ? 'Aguarde…'
-                                    : (_cadastro
-                                          ? 'Criar conta grátis'
-                                          : 'Entrar'),
-                                onPressed: _enviando ? null : _confirmar,
+                              TutorialAnchor(
+                                id: 'account-auth-action',
+                                child: Botao(
+                                  titulo: _enviando
+                                      ? 'Aguarde…'
+                                      : (_cadastro
+                                            ? 'Criar conta grátis'
+                                            : 'Entrar'),
+                                  onPressed: _enviando ? null : _confirmar,
+                                ),
                               ),
                               if (!_cadastro)
                                 Botao(

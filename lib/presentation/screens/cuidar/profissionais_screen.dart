@@ -8,6 +8,7 @@ import '../../theme/colors.dart';
 import '../../widgets/cartao.dart';
 import '../../widgets/cascata.dart';
 import '../../widgets/press_linha.dart';
+import '../../widgets/tutorial_button.dart';
 
 class ProfissionaisScreen extends ConsumerStatefulWidget {
   const ProfissionaisScreen({super.key});
@@ -80,48 +81,60 @@ class _ProfissionaisScreenState extends ConsumerState<ProfissionaisScreen> {
                   for (var i = 0; i < agenda.profissionais.length; i++) ...[
                     Cascata(
                       index: i,
-                      child: PressLinha(
-                        onTap: () {
-                          final pro = agenda.profissionais[i];
-                          ref
-                              .read(careControllerProvider.notifier)
-                              .escolherHorario(
-                                profissionalId: pro.id,
-                                nome: pro.nome,
-                                especialidade: pro.especialidade,
-                              );
-                        },
-                        child: Cartao(
-                          animate: false,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                agenda.profissionais[i].nome,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              if (agenda
-                                  .profissionais[i]
-                                  .especialidade
-                                  .isNotEmpty)
+                      child: TutorialAnchor(
+                        id: i == 0
+                            ? 'care-professional'
+                            : 'care-professional-$i',
+                        child: PressLinha(
+                          onTap: () {
+                            final pro = agenda.profissionais[i];
+                            ref
+                                .read(careControllerProvider.notifier)
+                                .escolherHorario(
+                                  profissionalId: pro.id,
+                                  nome: pro.nome,
+                                  especialidade: pro.especialidade,
+                                );
+                          },
+                          child: Cartao(
+                            animate: false,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  agenda.profissionais[i].especialidade,
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  agenda.profissionais[i].nome,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
                                 ),
-                              if (agenda.profissionais[i].proximo != null) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  formatarQuando(
-                                    agenda.profissionais[i].proximo!,
+                                if (agenda
+                                    .profissionais[i]
+                                    .especialidade
+                                    .isNotEmpty)
+                                  Text(
+                                    agenda.profissionais[i].especialidade,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
                                   ),
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: CheckmeColors.care,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
+                                if (agenda.profissionais[i].proximo !=
+                                    null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    formatarQuando(
+                                      agenda.profissionais[i].proximo!,
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: CheckmeColors.care,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),

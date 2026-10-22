@@ -13,6 +13,7 @@ import '../../widgets/campo.dart';
 import '../../widgets/cartao.dart';
 import '../../widgets/cascata.dart';
 import '../../widgets/press_linha.dart';
+import '../../widgets/tutorial_button.dart';
 
 class HorariosScreen extends ConsumerStatefulWidget {
   const HorariosScreen({super.key, required this.fase});
@@ -115,15 +116,18 @@ class _HorariosScreenState extends ConsumerState<HorariosScreen> {
                   for (var i = 0; i < agenda.horarios.length; i++) ...[
                     Cascata(
                       index: i,
-                      child: PressLinha(
-                        onTap: agenda.reservando
-                            ? null
-                            : () => _reservar(agenda.horarios[i]),
-                        child: Cartao(
-                          animate: false,
-                          child: Text(
-                            formatarQuando(agenda.horarios[i].startsAt),
-                            style: Theme.of(context).textTheme.titleMedium,
+                      child: TutorialAnchor(
+                        id: i == 0 ? 'care-slot' : 'care-slot-$i',
+                        child: PressLinha(
+                          onTap: agenda.reservando
+                              ? null
+                              : () => _reservar(agenda.horarios[i]),
+                          child: Cartao(
+                            animate: false,
+                            child: Text(
+                              formatarQuando(agenda.horarios[i].startsAt),
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                           ),
                         ),
                       ),

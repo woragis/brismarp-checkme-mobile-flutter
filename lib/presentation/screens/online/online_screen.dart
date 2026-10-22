@@ -8,6 +8,7 @@ import '../../../domain/agenda/models.dart';
 import '../../../domain/agenda/quando.dart';
 import '../../../infrastructure/api/checkme_api.dart';
 import '../../theme/colors.dart';
+import '../../widgets/tutorial_button.dart';
 
 class OnlineScreen extends ConsumerStatefulWidget {
   const OnlineScreen({super.key});
@@ -182,39 +183,45 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
           else if (_especialidades.isEmpty)
             Text(_erro ?? 'Nenhuma especialidade disponível.')
           else
-            DropdownButtonFormField<String>(
-              value: _selecionada,
-              decoration: const InputDecoration(
-                labelText: 'Especialidade',
-                border: OutlineInputBorder(),
+            TutorialAnchor(
+              id: 'online-specialty',
+              child: DropdownButtonFormField<String>(
+                value: _selecionada,
+                decoration: const InputDecoration(
+                  labelText: 'Especialidade',
+                  border: OutlineInputBorder(),
+                ),
+                items: _especialidades
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: _buscando
+                    ? null
+                    : (value) => setState(() {
+                        _selecionada = value;
+                        _sugestao = null;
+                        _erro = null;
+                      }),
               ),
-              items: _especialidades
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: _buscando
-                  ? null
-                  : (value) => setState(() {
-                      _selecionada = value;
-                      _sugestao = null;
-                      _erro = null;
-                    }),
             ),
           const SizedBox(height: 12),
           if (auth.user != null)
-            FilledButton.icon(
-              onPressed: _buscando || _selecionada == null ? null : _buscar,
-              icon: _buscando
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.search),
-              label: Text(
-                _buscando ? 'Procurando médico…' : 'Encontrar médico',
+            TutorialAnchor(
+              id: 'online-search',
+              child: FilledButton.icon(
+                onPressed: _buscando || _selecionada == null ? null : _buscar,
+                icon: _buscando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.search),
+                label: Text(
+                  _buscando ? 'Procurando médico…' : 'Encontrar médico',
+                ),
               ),
             ),
           if (_erro != null) ...[
@@ -223,44 +230,50 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
           ],
           if (auth.user != null && pro != null && slot != null) ...[
             const SizedBox(height: 20),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Melhor opção disponível',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: CheckmeColors.navy,
+            TutorialAnchor(
+              id: 'online-suggestion',
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Melhor opção disponível',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: CheckmeColors.navy,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      pro.nome,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(_selecionada ?? pro.especialidade),
-                    const SizedBox(height: 8),
-                    Text(
-                      formatarQuando(slot.startsAt),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'A consulta acontece por videochamada. O link aparece em Consultas após confirmar.',
-                    ),
-                    const SizedBox(height: 14),
-                    FilledButton(
-                      onPressed: agenda.reservando ? null : _confirmar,
-                      child: Text(
-                        agenda.reservando
-                            ? 'Confirmando…'
-                            : 'Confirmar este horário',
+                      const SizedBox(height: 12),
+                      Text(
+                        pro.nome,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                    ),
-                  ],
+                      Text(_selecionada ?? pro.especialidade),
+                      const SizedBox(height: 8),
+                      Text(
+                        formatarQuando(slot.startsAt),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'A consulta acontece por videochamada. O link aparece em Consultas após confirmar.',
+                      ),
+                      const SizedBox(height: 14),
+                      TutorialAnchor(
+                        id: 'online-confirm',
+                        child: FilledButton(
+                          onPressed: agenda.reservando ? null : _confirmar,
+                          child: Text(
+                            agenda.reservando
+                                ? 'Confirmando…'
+                                : 'Confirmar este horário',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
