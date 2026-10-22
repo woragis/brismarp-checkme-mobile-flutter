@@ -14,6 +14,7 @@ class CareMessage {
 
 enum TriageStatus {
   continuar,
+  especialidade,
   leve,
   moderado,
   grave,
@@ -22,7 +23,10 @@ enum TriageStatus {
   static TriageStatus parse(String? raw) {
     switch (raw) {
       case 'CONTINUAR_TRIAGEM':
+      case 'CONTINUAR_ORIENTACAO':
         return TriageStatus.continuar;
+      case 'ESPECIALIDADE_SUGERIDA':
+        return TriageStatus.especialidade;
       case 'LEVE':
         return TriageStatus.leve;
       case 'MODERADO':
@@ -34,12 +38,18 @@ enum TriageStatus {
     }
   }
 
-  bool get terminal => this == leve || this == moderado || this == grave;
+  bool get terminal =>
+      this == especialidade ||
+      this == leve ||
+      this == moderado ||
+      this == grave;
 
   String get wire {
     switch (this) {
       case TriageStatus.continuar:
-        return 'CONTINUAR_TRIAGEM';
+        return 'CONTINUAR_ORIENTACAO';
+      case TriageStatus.especialidade:
+        return 'ESPECIALIDADE_SUGERIDA';
       case TriageStatus.leve:
         return 'LEVE';
       case TriageStatus.moderado:

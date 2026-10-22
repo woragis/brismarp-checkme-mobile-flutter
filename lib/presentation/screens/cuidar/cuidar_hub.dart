@@ -158,7 +158,7 @@ class _CuidarHubState extends ConsumerState<CuidarHub> {
               }
             },
             icon: const Icon(Icons.chat_bubble_outline, size: 18),
-            label: const Text('Quero orientação sobre sintomas'),
+            label: const Text('Ajude-me a escolher um profissional'),
           ),
           if (visitante) ...[
             const SizedBox(height: 8),

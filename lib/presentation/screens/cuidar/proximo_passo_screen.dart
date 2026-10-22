@@ -13,16 +13,13 @@ class ProximoPassoScreen extends ConsumerWidget {
     super.key,
     required this.mensagem,
     required this.status,
-    required this.relato,
   });
 
   final String mensagem;
   final TriageStatus status;
-  final String relato;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final leve = status == TriageStatus.leve;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -35,7 +32,7 @@ class ProximoPassoScreen extends ConsumerWidget {
                   const Center(child: CheckMark()),
                   const SizedBox(height: 28),
                   Text(
-                    'Você fez o próximo passo certo',
+                    'Vamos encontrar o profissional certo',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
@@ -56,18 +53,9 @@ class ProximoPassoScreen extends ConsumerWidget {
                                     ),
                               ),
                             ),
-                            _Selo(leve: leve),
+                            const _Selo(),
                           ],
                         ),
-                        if (relato.isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          _Faixa(
-                            titulo: 'O que você relatou',
-                            texto: relato,
-                            cor: CheckmeColors.navy,
-                            fundo: CheckmeColors.azulNeve,
-                          ),
-                        ],
                         const SizedBox(height: 10),
                         _Faixa(
                           titulo: 'Próximo passo',
@@ -77,7 +65,7 @@ class ProximoPassoScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Isto organiza o que você descreveu. Não é diagnóstico.',
+                          'Esta é apenas uma sugestão de especialidade. O profissional avaliará suas necessidades durante a consulta.',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(fontSize: 12),
                         ),
@@ -115,14 +103,12 @@ class ProximoPassoScreen extends ConsumerWidget {
 }
 
 class _Selo extends StatelessWidget {
-  const _Selo({required this.leve});
-
-  final bool leve;
+  const _Selo();
 
   @override
   Widget build(BuildContext context) {
-    final cor = leve ? CheckmeColors.sucesso : const Color(0xFFE65100);
-    final fundo = leve ? const Color(0xFFE8F6EE) : const Color(0xFFFFF4E5);
+    const cor = CheckmeColors.navy;
+    const fundo = CheckmeColors.azulNeve;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -130,7 +116,7 @@ class _Selo extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        leve ? 'Leve' : 'Moderado',
+        'Especialidade sugerida',
         style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );

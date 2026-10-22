@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/care/care_controller.dart';
-import '../../../domain/care/models.dart';
 import '../../../domain/care/phase.dart';
 import '../../theme/colors.dart';
 import '../../theme/motion.dart';
@@ -28,7 +27,6 @@ class CuidarScreen extends ConsumerWidget {
       CareProximoPasso(:final mensagem, :final status) => ProximoPassoScreen(
         mensagem: mensagem,
         status: status,
-        relato: _relato(care.messages),
       ),
       CareEscolhendoProfissional() => const ProfissionaisScreen(),
       final CareEscolhendoHorario fase => HorariosScreen(fase: fase),
@@ -86,13 +84,4 @@ void _voltar(WidgetRef ref) {
     case CareVisitante() || CareEmPaz() || CarePedindoConta():
       break;
   }
-}
-
-String _relato(List<CareMessage> messages) {
-  for (var i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].fromUser && messages[i].text.trim().isNotEmpty) {
-      return messages[i].text.trim();
-    }
-  }
-  return '';
 }

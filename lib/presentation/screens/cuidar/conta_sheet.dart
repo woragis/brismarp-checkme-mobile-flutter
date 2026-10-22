@@ -180,7 +180,7 @@ class _ContaSheetState extends ConsumerState<ContaSheet> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Crie a conta gratuita para receber a orientação completa. Em caso grave, a emergência não espera login.',
+                              'Crie sua conta gratuita para receber ajuda na escolha de uma especialidade. Em caso de emergência, procure atendimento imediatamente.',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 20),

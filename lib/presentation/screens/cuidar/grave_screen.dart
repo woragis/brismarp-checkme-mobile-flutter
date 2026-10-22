@@ -33,22 +33,22 @@ class GraveScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 40)
-                  .animate()
-                  .fadeIn(duration: CheckmeMotion.appear),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.white,
+                size: 40,
+              ).animate().fadeIn(duration: CheckmeMotion.appear),
               const SizedBox(height: 24),
               Text(
                 'Procure um serviço de emergência agora',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                    ),
+                style: Theme.of(context).textTheme.headlineMedium
+                    ?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 16),
               Text(
-                'Este relato tem um sinal de alarme. Não agende consulta por aqui. Ligue 192 (SAMU) ou fale com a equipe CheckMe no WhatsApp.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.92),
-                    ),
+                'Você descreveu um possível sinal de emergência. Não agende consulta por aqui. Ligue 192 (SAMU) ou fale com a equipe CheckMe no WhatsApp.',
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: Colors.white.withValues(alpha: 0.92)),
               ),
               const Spacer(),
               PulseCta(
@@ -92,10 +92,6 @@ class PulseCta extends StatelessWidget {
   Widget build(BuildContext context) {
     return child
         .animate(onPlay: (c) => c.repeat(reverse: true))
-        .fade(
-          begin: 0.7,
-          end: 1,
-          duration: CheckmeMotion.pulse,
-        );
+        .fade(begin: 0.7, end: 1, duration: CheckmeMotion.pulse);
   }
 }

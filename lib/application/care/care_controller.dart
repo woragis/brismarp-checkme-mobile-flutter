@@ -9,9 +9,9 @@ import '../../infrastructure/storage/session_store.dart';
 import '../identity/auth_controller.dart';
 
 const saudacao =
-    'Olá. Pode me contar o que você está sentindo? Descreva com as suas '
-    'palavras — quando começou, o que piorou, se há dificuldade para '
-    'respirar ou outro sinal que te preocupe.';
+    'Olá! Que tipo de atendimento ou profissional você está procurando? '
+    'Pode responder em poucas palavras. Não precisa contar seu histórico ou '
+    'detalhes clínicos.';
 
 const fallbackWhatsapp = 'https://wa.me/5582996690508';
 
@@ -150,7 +150,7 @@ class CareController extends Notifier<CareSnapshot> {
       );
       await _store.write(sessaoKey(auth.user!.id), reply.sessaoId);
       final visible = reply.mensagem.isEmpty
-          ? 'A orientação inicial fechou. O próximo passo é falar com um profissional da rede.'
+          ? 'Você pode explorar os profissionais e as especialidades disponíveis no app.'
           : reply.mensagem;
       final nextMessages = [
         ...messages,
@@ -167,7 +167,8 @@ class CareController extends Notifier<CareSnapshot> {
         );
         return;
       }
-      if (reply.status == TriageStatus.leve ||
+      if (reply.status == TriageStatus.especialidade ||
+          reply.status == TriageStatus.leve ||
           reply.status == TriageStatus.moderado) {
         state = CareSnapshot(
           phase: CareProximoPasso(mensagem: visible, status: reply.status),
@@ -325,7 +326,8 @@ class CareController extends Notifier<CareSnapshot> {
       );
       return;
     }
-    if (view.status == TriageStatus.leve ||
+    if (view.status == TriageStatus.especialidade ||
+        view.status == TriageStatus.leve ||
         view.status == TriageStatus.moderado) {
       CareMessage? lastIa;
       for (final m in view.history) {
@@ -336,7 +338,7 @@ class CareController extends Notifier<CareSnapshot> {
           : visibleOrientationText(view.soap);
       state = CareSnapshot(
         phase: CareProximoPasso(
-          mensagem: mensagem.isNotEmpty ? mensagem : 'A orientação inicial fechou. O próximo passo é falar com um profissional da rede.',
+          mensagem: mensagem.isNotEmpty ? mensagem : 'Você pode explorar os profissionais e as especialidades disponíveis no app.',
           status: view.status,
         ),
         messages: view.history,

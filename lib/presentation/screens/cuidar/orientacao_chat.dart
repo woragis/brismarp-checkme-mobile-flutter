@@ -75,7 +75,7 @@ class _OrientacaoChatState extends ConsumerState<OrientacaoChat> {
                 ),
                 Expanded(
                   child: Text(
-                    'Orientação inicial',
+                    'Ajuda para escolher profissional',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -119,7 +119,7 @@ class _OrientacaoChatState extends ConsumerState<OrientacaoChat> {
                 Expanded(
                   child: Campo(
                     controller: _texto,
-                    hint: 'O que você está sentindo?',
+                    hint: 'Que tipo de atendimento você procura?',
                     minLines: 1,
                     maxLines: 4,
                     textInputAction: TextInputAction.send,

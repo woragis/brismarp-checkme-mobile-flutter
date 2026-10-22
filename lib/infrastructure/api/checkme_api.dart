@@ -373,9 +373,11 @@ class CheckmeApi {
     final value = _requiredString(data, 'status');
     if (![
       'ALERTA_GRAVE',
+      'ESPECIALIDADE_SUGERIDA',
       'LEVE',
       'MODERADO',
       'CONTINUAR_TRIAGEM',
+      'CONTINUAR_ORIENTACAO',
     ].contains(value)) {
       throw ApiClient.invalidResponse();
     }
