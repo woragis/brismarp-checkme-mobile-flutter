@@ -155,7 +155,36 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
             onPressed: agenda.reservando ? null : () => _entrar(consulta.id),
           ),
         ],
-        if (consulta.status != 'cancelada' ||
+        if (consulta.status == 'reagendada')
+          Wrap(
+            spacing: 4,
+            children: [
+              Botao(
+                titulo: 'Aceitar horário',
+                expand: false,
+                onPressed: agenda.reservando
+                    ? null
+                    : () => ref
+                          .read(agendaControllerProvider.notifier)
+                          .responderProposta(consulta.id, aceitar: true),
+              ),
+              Botao(
+                titulo: 'Recusar proposta',
+                expand: false,
+                variante: BotaoVariante.terciario,
+                onPressed: agenda.reservando
+                    ? null
+                    : () => ref
+                          .read(agendaControllerProvider.notifier)
+                          .responderProposta(consulta.id, aceitar: false),
+              ),
+            ],
+          ),
+        if ([
+              'reservada',
+              'reagendada',
+              'confirmada',
+            ].contains(consulta.status) ||
             _podeEncerrar(agenda, consulta)) ...[
           const SizedBox(height: 8),
           Wrap(
@@ -172,20 +201,11 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
                             .read(agendaControllerProvider.notifier)
                             .encerrar(consulta.id),
                 ),
-              if (consulta.status != 'cancelada') ...[
-                Botao(
-                  titulo: 'Reagendar',
-                  expand: false,
-                  variante: BotaoVariante.secundario,
-                  onPressed: agenda.reservando
-                      ? null
-                      : () => ref
-                            .read(agendaControllerProvider.notifier)
-                            .abrirReagendar(
-                              consulta.id,
-                              consulta.profissionalId,
-                            ),
-                ),
+              if ([
+                'reservada',
+                'reagendada',
+                'confirmada',
+              ].contains(consulta.status)) ...[
                 Botao(
                   titulo: 'Cancelar',
                   expand: false,

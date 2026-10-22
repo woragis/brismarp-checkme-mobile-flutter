@@ -275,6 +275,21 @@ class AgendaController extends Notifier<AgendaSnapshot> {
     }
   }
 
+  Future<void> responderProposta(String id, {required bool aceitar}) async {
+    state = state.copyWith(reservando: true, clearError: true);
+    try {
+      await _api.responderProposta(id, aceitar: aceitar);
+      await carregarConsultas();
+      state = state.copyWith(reservando: false);
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        reservando: false,
+        errorCode: e.code,
+        errorMessage: e.message,
+      );
+    }
+  }
+
   Future<String> entrar(String id) async {
     state = state.copyWith(reservando: true, clearError: true);
     try {

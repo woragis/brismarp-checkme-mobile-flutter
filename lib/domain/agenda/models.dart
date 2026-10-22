@@ -84,5 +84,5 @@ class Consulta {
   final String status;
   final String videoStatus;
 
-  bool get podeEntrar => status != 'cancelada' && videoStatus != 'encerrada';
+  bool get podeEntrar => status == 'confirmada' && videoStatus != 'encerrada';
 }

@@ -37,9 +37,10 @@ class Selo extends StatelessWidget {
 }) {
   if (videoStatus == 'em_curso') return ('Em curso', SeloTom.care);
   return switch (status) {
-    'reservada' => ('Reservada', SeloTom.sucesso),
+    'reservada' => ('Aguardando médico', SeloTom.care),
     'confirmada' => ('Confirmada', SeloTom.sucesso),
-    'reagendada' => ('Reagendada', SeloTom.sucesso),
+    'reagendada' => ('Horário proposto', SeloTom.care),
+    'recusada' => ('Recusada', SeloTom.neutro),
     'cancelada' => ('Cancelada', SeloTom.neutro),
     'encerrada' => ('Encerrada', SeloTom.neutro),
     _ => (status.isEmpty ? 'Consulta' : status, SeloTom.neutro),

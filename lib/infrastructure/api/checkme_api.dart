@@ -227,6 +227,10 @@ class CheckmeApi {
     await _client.postJson('/appointments/$id/cancel', {});
   }
 
+  Future<void> responderProposta(String id, {required bool aceitar}) async {
+    await _client.postJson('/appointments/$id/respond', {'accept': aceitar});
+  }
+
   Future<String> entrarVideo(String id) async {
     final data = await _client.postJson('/appointments/$id/video/join', {});
     final url = _requiredString(data, 'url');
