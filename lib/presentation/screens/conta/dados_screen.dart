@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/conta/conta_controller.dart';
 import '../../../application/identity/auth_controller.dart';
 import '../../theme/colors.dart';
+import '../../widgets/tutorial_button.dart';
 import 'porta_screen.dart';
 import 'tela_interna.dart';
 
@@ -49,9 +50,12 @@ class _DadosScreenState extends ConsumerState<DadosScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
               children: [
-                SelectableText(
-                  _json ?? erro ?? 'Não foi possível baixar seus dados.',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                TutorialAnchor(
+                  id: 'account-data-export',
+                  child: SelectableText(
+                    _json ?? erro ?? 'Não foi possível baixar seus dados.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
               ],
             ),

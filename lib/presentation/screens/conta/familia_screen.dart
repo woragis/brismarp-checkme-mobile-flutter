@@ -7,6 +7,7 @@ import '../../theme/colors.dart';
 import '../../widgets/botao.dart';
 import '../../widgets/campo.dart';
 import '../../widgets/cartao.dart';
+import '../../widgets/tutorial_button.dart';
 import 'porta_screen.dart';
 import 'tela_interna.dart';
 
@@ -50,9 +51,12 @@ class _FamiliaScreenState extends ConsumerState<FamiliaScreen> {
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
         children: [
           if (conta.dependentes.isEmpty)
-            Text(
-              'Ninguém da família cadastrado ainda.',
-              style: Theme.of(context).textTheme.bodyMedium,
+            TutorialAnchor(
+              id: 'account-family-empty',
+              child: Text(
+                'Ninguém da família cadastrado ainda.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
           for (final dep in conta.dependentes) ...[
             const SizedBox(height: 8),
@@ -92,44 +96,49 @@ class _FamiliaScreenState extends ConsumerState<FamiliaScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          Cartao(
-            animate: false,
-            child: Column(
-              children: [
-                Campo(controller: _nome, hint: 'Nome do dependente'),
-                const SizedBox(height: 10),
-                Campo(controller: _parentesco, hint: 'Parentesco'),
-                if (conta.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    conta.errorMessage!,
-                    style: const TextStyle(
-                      color: CheckmeColors.alerta,
-                      fontSize: 13,
+          TutorialAnchor(
+            id: 'account-family-add',
+            child: Cartao(
+              animate: false,
+              child: Column(
+                children: [
+                  Campo(controller: _nome, hint: 'Nome do dependente'),
+                  const SizedBox(height: 10),
+                  Campo(controller: _parentesco, hint: 'Parentesco'),
+                  if (conta.errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      conta.errorMessage!,
+                      style: const TextStyle(
+                        color: CheckmeColors.alerta,
+                        fontSize: 13,
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: 8),
+                  Botao(
+                    titulo: 'Adicionar dependente',
+                    variante: BotaoVariante.secundario,
+                    onPressed: conta.salvando
+                        ? null
+                        : () async {
+                            await ref
+                                .read(contaControllerProvider.notifier)
+                                .adicionar(
+                                  nome: _nome.text,
+                                  kinship: _parentesco.text,
+                                );
+                            if (ref
+                                    .read(contaControllerProvider)
+                                    .errorMessage ==
+                                null) {
+                              _nome.clear();
+                              _parentesco.clear();
+                            }
+                          },
                   ),
                 ],
-                const SizedBox(height: 8),
-                Botao(
-                  titulo: 'Adicionar dependente',
-                  variante: BotaoVariante.secundario,
-                  onPressed: conta.salvando
-                      ? null
-                      : () async {
-                          await ref
-                              .read(contaControllerProvider.notifier)
-                              .adicionar(
-                                nome: _nome.text,
-                                kinship: _parentesco.text,
-                              );
-                          if (ref.read(contaControllerProvider).errorMessage ==
-                              null) {
-                            _nome.clear();
-                            _parentesco.clear();
-                          }
-                        },
-                ),
-              ],
+              ),
             ),
           ),
         ],

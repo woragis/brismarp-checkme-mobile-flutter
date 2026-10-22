@@ -146,38 +146,69 @@ const _guides = <String, List<_GuideStep>>{
   ],
   '/conta': [
     _GuideStep(
-      'Gerencie sua conta',
-      'Acesse perfil, ficha, dependentes e opções de privacidade.',
+      'Acesse sua ficha',
+      'Confira e atualize seus dados de contato.',
+      target: 'account-menu-profile',
+    ),
+    _GuideStep(
+      'Gerencie sua família',
+      'Cadastre dependentes vinculados à sua conta.',
+      target: 'account-menu-family',
+    ),
+    _GuideStep(
+      'Consulte seus dados',
+      'Veja os dados associados e as opções de privacidade.',
+      target: 'account-menu-data',
+    ),
+    _GuideStep(
+      'Gerencie o acesso',
+      'A exclusão da conta anonimiza seus dados e não pode ser desfeita.',
+      target: 'account-menu-delete',
     ),
   ],
   '/conta/porta': [
     _GuideStep(
       'Navegue pela sua conta',
       'Esta área reúne os atalhos para ficha, família e gerenciamento de dados.',
+      target: 'account-gate',
     ),
   ],
   '/conta/ficha': [
     _GuideStep(
       'Atualize sua ficha',
       'Confira e mantenha atualizados os dados pessoais disponíveis na conta.',
+      target: 'account-profile-fields',
+    ),
+    _GuideStep(
+      'Salve as alterações',
+      'Use Salvar ficha para guardar os dados atualizados.',
+      target: 'account-profile-save',
     ),
   ],
   '/conta/familia': [
     _GuideStep(
       'Gerencie dependentes',
       'Adicione ou remova pessoas vinculadas à sua conta conforme necessário.',
+      target: 'account-family-add',
+    ),
+    _GuideStep(
+      'Cadastre um dependente',
+      'Informe nome e parentesco e toque em Adicionar dependente.',
+      target: 'account-family-add',
     ),
   ],
   '/conta/dados': [
     _GuideStep(
       'Seus dados e privacidade',
       'Consulte as opções para exportar e gerenciar seus dados pessoais.',
+      target: 'account-data-export',
     ),
   ],
   '/conta/excluir': [
     _GuideStep(
       'Excluir conta',
       'Revise as informações e consequências antes de confirmar. A exclusão pode ser irreversível.',
+      target: 'account-delete-action',
     ),
   ],
 };

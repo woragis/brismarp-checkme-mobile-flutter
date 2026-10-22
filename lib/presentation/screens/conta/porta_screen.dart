@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/ir_para_cuidar.dart';
 import '../../widgets/logo.dart';
+import '../../widgets/tutorial_button.dart';
 import 'tela_interna.dart';
 
 class PortaScreen extends StatelessWidget {
@@ -18,8 +19,11 @@ class PortaScreen extends StatelessWidget {
           children: [
             Logo(size: 28),
             SizedBox(height: 24),
-            IrParaCuidar(
-              texto: 'Isso aparece depois que você entra. Volte para Cuidar e toque em Já tenho conta.',
+            TutorialAnchor(
+              id: 'account-gate',
+              child: IrParaCuidar(
+                texto: 'Isso aparece depois que você entra. Volte para Cuidar e toque em Já tenho conta.',
+              ),
             ),
           ],
         ),

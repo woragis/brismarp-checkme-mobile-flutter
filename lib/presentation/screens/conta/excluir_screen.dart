@@ -6,6 +6,7 @@ import '../../../application/conta/conta_controller.dart';
 import '../../../application/identity/auth_controller.dart';
 import '../../theme/colors.dart';
 import '../../widgets/botao.dart';
+import '../../widgets/tutorial_button.dart';
 import 'porta_screen.dart';
 import 'tela_interna.dart';
 
@@ -35,17 +36,20 @@ class ExcluirScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 16),
-          Botao(
-            titulo: conta.salvando ? 'Aguarde…' : 'Excluir conta',
-            variante: BotaoVariante.perigo,
-            onPressed: conta.salvando
-                ? null
-                : () async {
-                    final ok = await ref
-                        .read(contaControllerProvider.notifier)
-                        .apagar();
-                    if (ok && context.mounted) context.go('/cuidar');
-                  },
+          TutorialAnchor(
+            id: 'account-delete-action',
+            child: Botao(
+              titulo: conta.salvando ? 'Aguarde…' : 'Excluir conta',
+              variante: BotaoVariante.perigo,
+              onPressed: conta.salvando
+                  ? null
+                  : () async {
+                      final ok = await ref
+                          .read(contaControllerProvider.notifier)
+                          .apagar();
+                      if (ok && context.mounted) context.go('/cuidar');
+                    },
+            ),
           ),
         ],
       ),

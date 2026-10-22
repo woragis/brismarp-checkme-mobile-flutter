@@ -7,6 +7,7 @@ import '../../theme/colors.dart';
 import '../../widgets/botao.dart';
 import '../../widgets/campo.dart';
 import '../../widgets/cartao.dart';
+import '../../widgets/tutorial_button.dart';
 import 'porta_screen.dart';
 import 'tela_interna.dart';
 
@@ -69,26 +70,29 @@ class _FichaScreenState extends ConsumerState<FichaScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                     children: [
-                      Cartao(
-                        animate: false,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Campo(controller: _nome, hint: 'Nome'),
-                            const SizedBox(height: 10),
-                            Campo(controller: _cpf, hint: 'CPF'),
-                            const SizedBox(height: 10),
-                            Campo(
-                              controller: _phone,
-                              hint: 'Telefone',
-                              keyboardType: TextInputType.phone,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              email,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
+                      TutorialAnchor(
+                        id: 'account-profile-fields',
+                        child: Cartao(
+                          animate: false,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Campo(controller: _nome, hint: 'Nome'),
+                              const SizedBox(height: 10),
+                              Campo(controller: _cpf, hint: 'CPF'),
+                              const SizedBox(height: 10),
+                              Campo(
+                                controller: _phone,
+                                hint: 'Telefone',
+                                keyboardType: TextInputType.phone,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                email,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       if (conta.errorMessage != null) ...[
@@ -106,17 +110,20 @@ class _FichaScreenState extends ConsumerState<FichaScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                  child: Botao(
-                    titulo: conta.salvando ? 'Aguarde…' : 'Salvar ficha',
-                    onPressed: conta.salvando
-                        ? null
-                        : () => ref
-                              .read(contaControllerProvider.notifier)
-                              .salvar(
-                                nome: _nome.text,
-                                cpf: _cpf.text,
-                                phone: _phone.text,
-                              ),
+                  child: TutorialAnchor(
+                    id: 'account-profile-save',
+                    child: Botao(
+                      titulo: conta.salvando ? 'Aguarde…' : 'Salvar ficha',
+                      onPressed: conta.salvando
+                          ? null
+                          : () => ref
+                                .read(contaControllerProvider.notifier)
+                                .salvar(
+                                  nome: _nome.text,
+                                  cpf: _cpf.text,
+                                  phone: _phone.text,
+                                ),
+                    ),
                   ),
                 ),
               ],

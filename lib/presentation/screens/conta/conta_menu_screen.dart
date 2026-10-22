@@ -8,6 +8,7 @@ import '../../widgets/cartao.dart';
 import '../../widgets/cascata.dart';
 import '../../widgets/logo.dart';
 import '../../widgets/press_linha.dart';
+import '../../widgets/tutorial_button.dart';
 
 class ContaMenuScreen extends ConsumerWidget {
   const ContaMenuScreen({super.key});
@@ -69,49 +70,60 @@ class ContaMenuScreen extends ConsumerWidget {
             ],
             Cascata(
               index: i,
-              child: PressLinha(
-                onTap: () {
-                  final item = linhas[i];
-                  if (item.privada && !logado) {
-                    context.push('/conta/porta');
-                    return;
-                  }
-                  context.push(item.path);
+              child: TutorialAnchor(
+                id: switch (linhas[i].path) {
+                  '/conta/ficha' => 'account-menu-profile',
+                  '/conta/familia' => 'account-menu-family',
+                  '/conta/dados' => 'account-menu-data',
+                  _ => 'account-menu-delete',
                 },
-                child: Cartao(
-                  animate: false,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: CheckmeColors.azulNeve,
-                          shape: BoxShape.circle,
+                child: PressLinha(
+                  onTap: () {
+                    final item = linhas[i];
+                    if (item.privada && !logado) {
+                      context.push('/conta/porta');
+                      return;
+                    }
+                    context.push(item.path);
+                  },
+                  child: Cartao(
+                    animate: false,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: CheckmeColors.azulNeve,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            linhas[i].icone,
+                            color: CheckmeColors.navy,
+                          ),
                         ),
-                        child: Icon(linhas[i].icone, color: CheckmeColors.navy),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              linhas[i].titulo,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            Text(
-                              linhas[i].apoio,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                linhas[i].titulo,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                linhas[i].apoio,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(
-                        Icons.chevron_right,
-                        color: CheckmeColors.care,
-                      ),
-                    ],
+                        const Icon(
+                          Icons.chevron_right,
+                          color: CheckmeColors.care,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
