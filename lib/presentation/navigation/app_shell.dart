@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../theme/colors.dart';
 import '../theme/motion.dart';
+import '../widgets/tutorial_button.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -55,6 +56,8 @@ class _AppShellState extends State<AppShell>
         ),
         child: widget.navigationShell,
       ),
+      floatingActionButton: const TutorialButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: NavigationBar(
         selectedIndex: widget.navigationShell.currentIndex,
         indicatorColor: CheckmeColors.azulNeve,
