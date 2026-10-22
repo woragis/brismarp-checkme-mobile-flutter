@@ -67,13 +67,11 @@ class ChatReply {
     required this.status,
     required this.mensagem,
     required this.sessaoId,
-    this.soap,
   });
 
   final TriageStatus status;
   final String mensagem;
   final String sessaoId;
-  final String? soap;
 }
 
 class SessionView {
@@ -81,14 +79,12 @@ class SessionView {
     required this.id,
     required this.status,
     this.history = const [],
-    this.soap,
     this.updatedAt,
   });
 
   final String id;
   final TriageStatus status;
   final List<CareMessage> history;
-  final String? soap;
   final DateTime? updatedAt;
 }
 

@@ -75,14 +75,12 @@ class Consulta {
     required this.profissionalId,
     required this.startsAt,
     required this.status,
-    this.videoStatus = '',
   });
 
   final String id;
   final String profissionalId;
   final DateTime startsAt;
   final String status;
-  final String videoStatus;
 
-  bool get podeEntrar => status == 'confirmada' && videoStatus != 'encerrada';
+  bool get podeEntrar => status == 'confirmada';
 }

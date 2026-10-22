@@ -335,7 +335,7 @@ class CareController extends Notifier<CareSnapshot> {
       }
       final mensagem = (lastIa != null && lastIa.text.isNotEmpty)
           ? lastIa.text
-          : visibleOrientationText(view.soap);
+          : '';
       state = CareSnapshot(
         phase: CareProximoPasso(
           mensagem: mensagem.isNotEmpty ? mensagem : 'Você pode explorar os profissionais e as especialidades disponíveis no app.',

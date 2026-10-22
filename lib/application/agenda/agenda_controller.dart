@@ -16,7 +16,6 @@ class AgendaSnapshot {
     this.loading = false,
     this.reservando = false,
     this.pedindoCodigo = false,
-    this.salaId,
     this.reagendandoId,
     this.errorMessage,
     this.errorCode,
@@ -28,7 +27,6 @@ class AgendaSnapshot {
   final bool loading;
   final bool reservando;
   final bool pedindoCodigo;
-  final String? salaId;
   final String? reagendandoId;
   final String? errorMessage;
   final String? errorCode;
@@ -47,8 +45,6 @@ class AgendaSnapshot {
     bool? loading,
     bool? reservando,
     bool? pedindoCodigo,
-    String? salaId,
-    bool clearSala = false,
     String? reagendandoId,
     bool clearReagendar = false,
     String? errorMessage,
@@ -62,7 +58,6 @@ class AgendaSnapshot {
       loading: loading ?? this.loading,
       reservando: reservando ?? this.reservando,
       pedindoCodigo: pedindoCodigo ?? this.pedindoCodigo,
-      salaId: clearSala ? null : (salaId ?? this.salaId),
       reagendandoId: clearReagendar
           ? null
           : (reagendandoId ?? this.reagendandoId),
@@ -261,9 +256,6 @@ class AgendaController extends Notifier<AgendaSnapshot> {
     state = state.copyWith(reservando: true, clearError: true);
     try {
       await _api.cancelarConsulta(id);
-      if (state.salaId == id) {
-        state = state.copyWith(clearSala: true);
-      }
       await carregarConsultas();
       state = state.copyWith(reservando: false);
     } on ApiException catch (e) {
@@ -294,9 +286,8 @@ class AgendaController extends Notifier<AgendaSnapshot> {
     state = state.copyWith(reservando: true, clearError: true);
     try {
       final url = await _api.entrarVideo(id);
-      state = state.copyWith(reservando: false, salaId: id);
       await carregarConsultas();
-      state = state.copyWith(reservando: false, salaId: id);
+      state = state.copyWith(reservando: false);
       return url;
     } on ApiException catch (e) {
       state = state.copyWith(
@@ -305,22 +296,6 @@ class AgendaController extends Notifier<AgendaSnapshot> {
         errorMessage: e.message,
       );
       return '';
-    }
-  }
-
-  Future<void> encerrar(String id) async {
-    state = state.copyWith(reservando: true, clearError: true);
-    try {
-      await _api.encerrarVideo(id);
-      state = state.copyWith(clearSala: true);
-      await carregarConsultas();
-      state = state.copyWith(reservando: false, clearSala: true);
-    } on ApiException catch (e) {
-      state = state.copyWith(
-        reservando: false,
-        errorCode: e.code,
-        errorMessage: e.message,
-      );
     }
   }
 

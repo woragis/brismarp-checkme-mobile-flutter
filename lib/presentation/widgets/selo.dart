@@ -31,11 +31,7 @@ class Selo extends StatelessWidget {
   }
 }
 
-(String, SeloTom) seloDaConsulta({
-  required String status,
-  required String videoStatus,
-}) {
-  if (videoStatus == 'em_curso') return ('Em curso', SeloTom.care);
+(String, SeloTom) seloDaConsulta({required String status}) {
   return switch (status) {
     'reservada' => ('Aguardando médico', SeloTom.care),
     'confirmada' => ('Confirmada', SeloTom.sucesso),

@@ -136,10 +136,7 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
     required bool tutorialProposal,
     required bool tutorialVideo,
   }) {
-    final selo = seloDaConsulta(
-      status: consulta.status,
-      videoStatus: consulta.videoStatus,
-    );
+    final selo = seloDaConsulta(status: consulta.status);
     final proposalActions = Wrap(
       spacing: 4,
       children: [
@@ -207,26 +204,14 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
               ? TutorialAnchor(id: 'consultas-proposal', child: proposalActions)
               : proposalActions,
         if ([
-              'reservada',
-              'reagendada',
-              'confirmada',
-            ].contains(consulta.status) ||
-            _podeEncerrar(agenda, consulta)) ...[
+          'reservada',
+          'reagendada',
+          'confirmada',
+        ].contains(consulta.status)) ...[
           const SizedBox(height: 8),
           Wrap(
             spacing: 4,
             children: [
-              if (_podeEncerrar(agenda, consulta))
-                Botao(
-                  titulo: 'Encerrar',
-                  expand: false,
-                  variante: BotaoVariante.perigo,
-                  onPressed: agenda.reservando
-                      ? null
-                      : () => ref
-                            .read(agendaControllerProvider.notifier)
-                            .encerrar(consulta.id),
-                ),
               if ([
                 'reservada',
                 'reagendada',
@@ -289,13 +274,6 @@ class _ConsultasScreenState extends ConsumerState<ConsultasScreen> {
         ],
       ],
     );
-  }
-
-  bool _podeEncerrar(AgendaSnapshot agenda, Consulta consulta) {
-    if (consulta.status == 'cancelada' || consulta.videoStatus == 'encerrada') {
-      return false;
-    }
-    return agenda.salaId == consulta.id || consulta.videoStatus == 'em_curso';
   }
 
   Future<void> _entrar(String id) async {

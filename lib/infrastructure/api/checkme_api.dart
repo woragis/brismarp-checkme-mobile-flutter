@@ -68,7 +68,6 @@ class CheckmeApi {
       status: _triageStatus(data),
       mensagem: visibleOrientationText(_requiredString(data, 'mensagem')),
       sessaoId: _requiredString(data, 'sessaoId'),
-      soap: data['soap']?.toString(),
     );
   }
 
@@ -208,7 +207,6 @@ class CheckmeApi {
       profissionalId: _requiredString(data, 'professionalId'),
       startsAt: _date(data, 'startsAt'),
       status: _requiredString(data, 'status'),
-      videoStatus: data['videoStatus']?.toString() ?? '',
     );
   }
 
@@ -239,10 +237,6 @@ class CheckmeApi {
       throw ApiClient.invalidResponse();
     }
     return url;
-  }
-
-  Future<void> encerrarVideo(String id) async {
-    await _client.postJson('/appointments/$id/video/end', {});
   }
 
   Future<Map<String, dynamic>> eu() => _client.getJson('/me');
@@ -407,7 +401,6 @@ class CheckmeApi {
           final role = item['role']?.toString() ?? '';
           final content = item['content']?.toString() ?? '';
           final text = visibleOrientationText(content);
-          if (text.isEmpty && looksLikeSoapJson(content)) continue;
           if (text.isEmpty) continue;
           history.add(
             CareMessage(
@@ -425,7 +418,6 @@ class CheckmeApi {
       id: _requiredString(data, 'id'),
       status: _triageStatus(data),
       history: history,
-      soap: data['soap']?.toString(),
       updatedAt: DateTime.tryParse(data['updatedAt']?.toString() ?? ''),
     );
   }
